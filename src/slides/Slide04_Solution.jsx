@@ -52,6 +52,7 @@ export default function Slide04_Solution() {
         flexDirection: 'column',
         padding: '100px 52px 80px',
         gap: 40,
+        maxWidth: '54vw',
       }}
     >
       {/* Header */}
@@ -82,7 +83,7 @@ export default function Slide04_Solution() {
       </motion.div>
 
       {/* Solution grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
         {SOLUTIONS.map((s, i) => {
           const Icon = s.icon
           return (

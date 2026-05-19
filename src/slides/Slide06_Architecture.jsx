@@ -16,12 +16,14 @@ export default function Slide06_Architecture() {
         width: '100%',
         minHeight: '100vh',
         display: 'flex',
-        gap: 40,
+        flexDirection: 'column',
+        gap: 32,
         padding: '100px 52px 88px',
+        maxWidth: '58vw',
       }}
     >
       {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
@@ -87,112 +89,40 @@ export default function Slide06_Architecture() {
         </motion.div>
       </div>
 
-      {/* Right panel: key features */}
+      {/* Key features row */}
       <motion.div
-        initial={{ opacity: 0, x: 24 }}
-        whileInView={{ opacity: 1, x: 0 }}
-
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ delay: 0.4, duration: 0.45 }}
-        style={{
-          width: 200,
-          flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-          justifyContent: 'center',
-        }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+        style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}
       >
-        <p
-          style={{
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: '0.65rem',
-            color: 'rgba(74,222,128,0.5)',
-            letterSpacing: '0.1em',
-            marginBottom: 4,
-          }}
-        >
-          KEY FEATURES
-        </p>
-
         {FEATURES.map((f, i) => {
           const Icon = f.icon
           return (
             <motion.div
               key={f.label}
-              initial={{ opacity: 0, x: 16 }}
-              whileInView={{ opacity: 1, x: 0 }}
-
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.55 + i * 0.1, duration: 0.35 }}
+              transition={{ delay: 0.6 + i * 0.08, duration: 0.32 }}
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 12,
-                padding: '12px 14px',
-                borderRadius: 10,
+                gap: 8,
+                padding: '8px 14px',
+                borderRadius: 100,
                 background: `${f.color}0c`,
                 border: `1px solid ${f.color}28`,
               }}
             >
-              <div
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 8,
-                  background: `${f.color}18`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: f.color,
-                  flexShrink: 0,
-                }}
-              >
-                <Icon size={15} />
-              </div>
-              <span
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: 'rgba(240,253,244,0.85)',
-                  lineHeight: 1.35,
-                }}
-              >
+              <Icon size={13} color={f.color} />
+              <span style={{ fontSize: '0.72rem', fontWeight: 600, color: 'rgba(240,253,244,0.85)' }}>
                 {f.label}
               </span>
             </motion.div>
           )
         })}
-
-        {/* Response preview */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-
-          viewport={{ once: true }}
-          transition={{ delay: 1.1, duration: 0.4 }}
-          style={{
-            marginTop: 8,
-            padding: '12px',
-            borderRadius: 8,
-            background: 'rgba(0,0,0,0.4)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: '0.58rem',
-            color: 'rgba(240,253,244,0.5)',
-            lineHeight: 1.7,
-          }}
-        >
-          <span style={{ color: '#4ade80' }}>{'{'}</span>
-          <br />
-          &nbsp;&nbsp;<span style={{ color: '#60a5fa' }}>"predictions"</span>: [...]
-          <br />
-          &nbsp;&nbsp;<span style={{ color: '#60a5fa' }}>"inference_ms"</span>: 142
-          <br />
-          &nbsp;&nbsp;<span style={{ color: '#60a5fa' }}>"model"</span>: <span style={{ color: '#fbbf24' }}>"efficientnet-b0"</span>
-          <br />
-          <span style={{ color: '#4ade80' }}>{'}'}</span>
-        </motion.div>
       </motion.div>
     </div>
   )

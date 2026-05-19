@@ -31,8 +31,9 @@ export default function Slide03_Problem() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        padding: '100px 64px 80px',
+        padding: '100px 52px 80px',
         gap: 48,
+        maxWidth: '54vw',
       }}
     >
       {/* Header */}

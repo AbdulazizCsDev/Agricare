@@ -7,10 +7,10 @@ const PLANT_X = 2.2
 const CAM_STATES = {
   // Hero: full plant visible on right half
   hero:         { x: -0.5, y: 1.0,  z: 6.5, lx: PLANT_X, ly: 1.0, lz: 0 },
-  // Problem: elevated, far enough to see leaves in context
-  problem:      { x:  0.5, y: 2.4,  z: 5.0, lx: PLANT_X, ly: 2.2, lz: 0 },
-  // Solution: lowered, far enough to see base in context
-  solution:     { x:  0.5, y: 0.2,  z: 5.0, lx: PLANT_X, ly: 0.6, lz: 0 },
+  // Problem: wide view showing full plant on right
+  problem:      { x:  0.0, y: 1.6,  z: 7.5, lx: PLANT_X, ly: 1.4, lz: 0 },
+  // Solution: wide view, slightly lower angle
+  solution:     { x:  0.0, y: 0.4,  z: 7.0, lx: PLANT_X, ly: 0.8, lz: 0 },
   // Timeline: wide left view
   timeline:     { x: -1.5, y: 1.2,  z: 6.0, lx: PLANT_X, ly: 1.0, lz: 0 },
   // Architecture: wide right view
@@ -268,10 +268,8 @@ export default function PlantBackground() {
 
         if (modelReady) {
           // ── Plant sway ─────────────────────────────────────
-          const camVel = Math.abs(sp.camX.vel) + Math.abs(sp.camY.vel) + Math.abs(sp.camZ.vel)
-          const transitionSpin = camVel * 1.8
           const wilt = sick * 0.06
-          group.rotation.y = Math.sin(time * 0.32) * 0.025 + mx * 0.055 + transitionSpin
+          group.rotation.y = Math.sin(time * 0.32) * 0.025 + mx * 0.055
           group.rotation.x = -my * 0.07  + Math.sin(time * 0.26) * 0.012
           group.rotation.z = wilt + Math.sin(time * 0.18) * (0.01 + sick * 0.02)
 

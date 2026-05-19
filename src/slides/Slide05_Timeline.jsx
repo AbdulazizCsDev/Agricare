@@ -9,8 +9,9 @@ export default function Slide05_Timeline() {
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        padding: '100px 64px 88px',
+        padding: '100px 52px 88px',
         gap: 36,
+        maxWidth: '58vw',
       }}
     >
       {/* Header */}
