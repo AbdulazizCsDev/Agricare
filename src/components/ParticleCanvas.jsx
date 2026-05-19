@@ -30,27 +30,50 @@ export default function ParticleCanvas({ opacity = 0.5 }) {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+      // Lines with glow
+      ctx.save()
+      ctx.shadowColor = 'rgba(74,222,128,0.6)'
+      ctx.shadowBlur  = 6
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
           const dx = pts[i].x - pts[j].x
           const dy = pts[i].y - pts[j].y
           const d  = Math.sqrt(dx * dx + dy * dy)
           if (d < MAX_DIST) {
+            const alpha = (1 - d / MAX_DIST) * 0.55
             ctx.beginPath()
-            ctx.strokeStyle = `rgba(74,222,128,${(1 - d / MAX_DIST) * 0.15})`
-            ctx.lineWidth   = 0.5
+            ctx.strokeStyle = `rgba(74,222,128,${alpha})`
+            ctx.lineWidth   = 0.8
             ctx.moveTo(pts[i].x, pts[i].y)
             ctx.lineTo(pts[j].x, pts[j].y)
             ctx.stroke()
           }
         }
       }
+      ctx.restore()
 
+      // Particles — outer glow ring + bright core
       pts.forEach((p) => {
+        // Outer glow
+        ctx.save()
+        ctx.shadowColor = '#4ade80'
+        ctx.shadowBlur  = 14
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.r * 2.2, 0, Math.PI * 2)
+        ctx.fillStyle = 'rgba(74,222,128,0.12)'
+        ctx.fill()
+        ctx.restore()
+
+        // Bright core
+        ctx.save()
+        ctx.shadowColor = '#4ade80'
+        ctx.shadowBlur  = 8
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(74,222,128,0.4)'
+        ctx.fillStyle = 'rgba(74,222,128,0.9)'
         ctx.fill()
+        ctx.restore()
+
         p.x += p.vx
         p.y += p.vy
         if (p.x < 0 || p.x > canvas.width)  p.vx *= -1
