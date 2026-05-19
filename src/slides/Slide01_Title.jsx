@@ -95,7 +95,7 @@ export default function Slide01_Title() {
         alignItems: 'flex-start',
         justifyContent: 'center',
         position: 'relative',
-        background: 'linear-gradient(90deg, rgba(10,20,16,0.85) 42%, rgba(10,20,16,0.2) 70%, transparent 100%)',
+        background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 42%, rgba(0,0,0,0.2) 70%, transparent 100%)',
         paddingLeft: '6vw',
       }}
     >

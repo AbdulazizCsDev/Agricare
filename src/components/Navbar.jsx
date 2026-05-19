@@ -43,7 +43,7 @@ export default function Navbar() {
         zIndex: 200,
         padding: '0 2rem',
         transition: 'background 0.3s, border-color 0.3s, box-shadow 0.3s',
-        background: scrolled ? 'rgba(10,20,16,0.88)' : 'transparent',
+        background: scrolled ? 'rgba(0,0,0,0.88)' : 'transparent',
         backdropFilter: scrolled ? 'blur(16px)' : 'none',
         borderBottom: scrolled ? '1px solid rgba(74,222,128,0.12)' : '1px solid transparent',
         boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.4)' : 'none',
@@ -145,7 +145,7 @@ export default function Navbar() {
           display: 'flex',
           flexDirection: 'column',
           padding: '12px 2rem 20px',
-          background: 'rgba(10,20,16,0.96)',
+          background: 'rgba(0,0,0,0.96)',
           backdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(74,222,128,0.12)',
         }}>

@@ -25,7 +25,7 @@ export default function App() {
         id="problem"
         style={{
           minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
-          background: 'linear-gradient(90deg, rgba(10,20,16,0.92) 48%, rgba(10,20,16,0.35) 75%, transparent 100%)',
+          background: 'linear-gradient(90deg, rgba(0,0,0,0.92) 48%, rgba(0,0,0,0.35) 75%, transparent 100%)',
         }}
       >
         <Slide03_Problem />
@@ -36,7 +36,7 @@ export default function App() {
         id="solution"
         style={{
           minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
-          background: 'linear-gradient(90deg, rgba(10,20,16,0.92) 48%, rgba(10,20,16,0.35) 75%, transparent 100%)',
+          background: 'linear-gradient(90deg, rgba(0,0,0,0.92) 48%, rgba(0,0,0,0.35) 75%, transparent 100%)',
         }}
       >
         <Slide04_Solution />
@@ -47,7 +47,7 @@ export default function App() {
         id="timeline"
         style={{
           minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
-          background: 'linear-gradient(90deg, rgba(10,20,16,0.92) 48%, rgba(10,20,16,0.35) 75%, transparent 100%)',
+          background: 'linear-gradient(90deg, rgba(0,0,0,0.92) 48%, rgba(0,0,0,0.35) 75%, transparent 100%)',
         }}
       >
         <Slide05_Timeline />
@@ -58,7 +58,7 @@ export default function App() {
         id="architecture"
         style={{
           minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
-          background: 'linear-gradient(90deg, rgba(10,20,16,0.92) 48%, rgba(10,20,16,0.35) 75%, transparent 100%)',
+          background: 'linear-gradient(90deg, rgba(0,0,0,0.92) 48%, rgba(0,0,0,0.35) 75%, transparent 100%)',
         }}
       >
         <Slide06_Architecture />

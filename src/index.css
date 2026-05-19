@@ -6,7 +6,7 @@
   --color-accent-dim: rgba(74, 222, 128, 0.15);
   --color-accent-glow: rgba(74, 222, 128, 0.3);
   --color-amber: #fbbf24;
-  --color-bg: #0a1410;
+  --color-bg: #000000;
   --font-inter: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 }
@@ -17,7 +17,7 @@
   --accent-dim:     rgba(74, 222, 128, 0.12);
   --accent-glow:    rgba(74, 222, 128, 0.3);
   --accent-purple:  #a78bfa;
-  --bg-primary:     #0a1410;
+  --bg-primary:     #000000;
   --bg-glass:       rgba(74, 222, 128, 0.05);
   --border:         rgba(74, 222, 128, 0.18);
   --border-card:    rgba(74, 222, 128, 0.12);
@@ -39,7 +39,7 @@ html {
 
 html, body {
   width: 100%;
-  background: #0a1410;
+  background: #000000;
   color: #f0fdf4;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -63,7 +63,7 @@ html, body {
   inset: 0;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #0a1410 0%, #0d1f15 50%, #0a1410 100%);
+  background: #000000;
 }
 
 /* Progress bar */

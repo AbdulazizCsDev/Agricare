@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 
-// Plant group is offset to x=2.2 (right side of viewport)
-const PLANT_X = 2.2
+// Plant group is offset to x=3.5 (right side of viewport)
+const PLANT_X = 3.5
 
 /* ─── Camera targets per section ─────────────────────────────── */
 const CAM_STATES = {
@@ -33,6 +33,10 @@ function makeSpring(val) { return { pos: val, vel: 0 } }
 function stepSpring(s, target, k = 0.055, d = 0.87) {
   s.vel = s.vel * d + (target - s.pos) * k
   s.pos += s.vel
+  // snap to rest when nearly settled to prevent micro-jitter
+  if (Math.abs(s.vel) < 0.00008 && Math.abs(s.pos - target) < 0.00008) {
+    s.vel = 0; s.pos = target
+  }
   return s.pos
 }
 
@@ -94,29 +98,32 @@ export default function PlantBackground() {
       /* ── Scene ────────────────────────────────────────────── */
       const scene = new THREE.Scene()
 
-      const ambient = new THREE.AmbientLight(0xffffff, 1.8)
+      // Low ambient so deep shadows read black
+      const ambient = new THREE.AmbientLight(0xffffff, 0.6)
       scene.add(ambient)
 
-      // Main key — top-right
-      const key = new THREE.DirectionalLight(0xffffff, 4.5)
-      key.position.set(4, 8, 6)
-      key.castShadow = true
-      key.shadow.mapSize.setScalar(1024)
-      scene.add(key)
+      // Top spotlight — dramatic downward beam
+      const topSpot = new THREE.SpotLight(0xffffff, 18, 30, Math.PI / 5.5, 0.35, 1.2)
+      topSpot.position.set(PLANT_X, 12, 2)
+      topSpot.target.position.set(PLANT_X, 0, 0)
+      topSpot.castShadow = true
+      topSpot.shadow.mapSize.setScalar(1024)
+      scene.add(topSpot)
+      scene.add(topSpot.target)
 
-      // Strong front fill — faces the plant directly from camera side
-      const front = new THREE.DirectionalLight(0xffffff, 3.5)
-      front.position.set(PLANT_X, 1.5, 8)
+      // Soft front fill so leaves aren't pitch black facing camera
+      const front = new THREE.DirectionalLight(0xffffff, 1.8)
+      front.position.set(PLANT_X - 1, 3, 9)
       scene.add(front)
 
-      // Green rim from behind-left
-      const rim = new THREE.PointLight(0x4ade80, 5.0, 28)
-      rim.position.set(PLANT_X - 4, 4, -5)
+      // Green rim from behind
+      const rim = new THREE.PointLight(0x4ade80, 4.0, 22)
+      rim.position.set(PLANT_X - 3, 5, -4)
       scene.add(rim)
 
-      // Warm fill from right side
-      const fill = new THREE.PointLight(0xa8edbc, 2.5, 20)
-      fill.position.set(PLANT_X + 3, 2, 3)
+      // Subtle cold fill from left
+      const fill = new THREE.PointLight(0x88ccff, 1.2, 18)
+      fill.position.set(PLANT_X - 4, 2, 4)
       scene.add(fill)
 
       /* ── Disease light (problem section) ─────────────────── */
@@ -235,12 +242,12 @@ export default function PlantBackground() {
         const fxTgt  = FX[sec]
 
         // ── Spring-step every value ──────────────────────────
-        const cx  = stepSpring(sp.camX,  camTgt.x,  0.028, 0.92)
-        const cy  = stepSpring(sp.camY,  camTgt.y,  0.028, 0.92)
-        const cz  = stepSpring(sp.camZ,  camTgt.z,  0.028, 0.92)
-        const lkx = stepSpring(sp.lkX,   camTgt.lx, 0.028, 0.92)
-        const lky = stepSpring(sp.lkY,   camTgt.ly, 0.028, 0.92)
-        const lkz = stepSpring(sp.lkZ,   camTgt.lz, 0.028, 0.92)
+        const cx  = stepSpring(sp.camX,  camTgt.x,  0.018, 0.95)
+        const cy  = stepSpring(sp.camY,  camTgt.y,  0.018, 0.95)
+        const cz  = stepSpring(sp.camZ,  camTgt.z,  0.018, 0.95)
+        const lkx = stepSpring(sp.lkX,   camTgt.lx, 0.018, 0.95)
+        const lky = stepSpring(sp.lkY,   camTgt.ly, 0.018, 0.95)
+        const lkz = stepSpring(sp.lkZ,   camTgt.lz, 0.018, 0.95)
 
         const sick = stepSpring(sp.sick, fxTgt.sick, 0.018, 0.93)
         const scan = stepSpring(sp.scan, fxTgt.scan, 0.022, 0.92)
@@ -268,10 +275,10 @@ export default function PlantBackground() {
 
         if (modelReady) {
           // ── Plant sway ─────────────────────────────────────
-          const wilt = sick * 0.06
-          group.rotation.y = Math.sin(time * 0.32) * 0.025 + mx * 0.055
-          group.rotation.x = -my * 0.07  + Math.sin(time * 0.26) * 0.012
-          group.rotation.z = wilt + Math.sin(time * 0.18) * (0.01 + sick * 0.02)
+          const wilt = sick * 0.05
+          group.rotation.y = Math.sin(time * 0.28) * 0.012 + mx * 0.03
+          group.rotation.x = -my * 0.04  + Math.sin(time * 0.22) * 0.006
+          group.rotation.z = wilt + Math.sin(time * 0.16) * (0.006 + sick * 0.014)
 
           // Breathing scale (reduced when sick, stronger during scan)
           const breathe = 1 + Math.sin(time * 0.72) * (0.006 + scan * 0.004)
