@@ -1,16 +1,68 @@
-# React + Vite
+# Agro-Mind Presentation Deck
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interactive slide-by-slide presentation for the **Agro-Mind** AI crop disease classification project.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Vite + React
+- Tailwind CSS v4 (dark green/AI aesthetic)
+- Framer Motion (slide transitions + in-slide animations)
+- Lucide React (icons)
 
-## React Compiler
+## Run
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Open `http://localhost:5173` — optimized for 1920×1080 projector/laptop.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Navigation
+
+| Key | Action |
+|-----|--------|
+| `→` / `Space` | Next slide |
+| `←` | Previous slide |
+| `1`–`6` | Jump to slide |
+| `F` | Toggle fullscreen |
+| Click dots / arrows | Navigate |
+
+## Slides
+
+1. **Title** — Hero with particle canvas, animated logo
+2. **Team** — 4 AI engineers with staggered card entrance
+3. **Problem** — Animated 62% counter with glitch effect + problem bullets
+4. **Solution** — 7-stage pipeline (click any box for detail)
+5. **Timeline** — Gantt chart: 5 weeks, Phase 1 vs Phase 2
+6. **Architecture** — System diagram with clickable nodes + key features panel
+
+## File Layout
+
+```
+src/
+├── App.jsx                    # Slide manager + keyboard listeners
+├── main.jsx
+├── index.css
+├── components/
+│   ├── SlideLayout.jsx        # Progress bar, slide badge, logo watermark
+│   ├── SlideNav.jsx           # Bottom navigation dots + arrows
+│   ├── AnimatedCounter.jsx    # Count-up animation
+│   ├── Logo.jsx               # Inline SVG logo (leaf + neural net)
+│   └── visuals/
+│       ├── PipelineFlow.jsx
+│       ├── ModelComparison.jsx
+│       ├── TimelineGantt.jsx
+│       └── ArchitectureDiagram.jsx
+├── slides/
+│   ├── Slide01_Title.jsx
+│   ├── Slide02_Team.jsx
+│   ├── Slide03_Problem.jsx
+│   ├── Slide04_Solution.jsx
+│   ├── Slide05_Timeline.jsx
+│   └── Slide06_Architecture.jsx
+└── data/
+    ├── team.js
+    ├── pipeline.js
+    └── timeline.js
+```
