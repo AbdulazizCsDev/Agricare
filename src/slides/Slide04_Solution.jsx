@@ -53,6 +53,7 @@ export default function Slide04_Solution() {
         padding: '100px 52px 80px',
         gap: 40,
         maxWidth: '54vw',
+        background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)',
       }}
     >
       {/* Header */}

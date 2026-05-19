@@ -20,6 +20,7 @@ export default function Slide06_Architecture() {
         gap: 32,
         padding: '100px 52px 88px',
         maxWidth: '58vw',
+        background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)',
       }}
     >
       {/* Main content */}

@@ -12,6 +12,7 @@ export default function Slide05_Timeline() {
         padding: '100px 52px 88px',
         gap: 36,
         maxWidth: '58vw',
+        background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)',
       }}
     >
       {/* Header */}
