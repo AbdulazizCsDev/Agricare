@@ -1,88 +1,6 @@
-import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Logo from '../components/Logo'
-
-function ParticleCanvas() {
-  const canvasRef = useRef(null)
-
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    let animId
-
-    const resize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
-    resize()
-    window.addEventListener('resize', resize)
-
-    const COUNT = 55
-    const MAX_DIST = 150
-
-    const pts = Array.from({ length: COUNT }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      r: Math.random() * 1.6 + 0.6,
-    }))
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-      for (let i = 0; i < pts.length; i++) {
-        for (let j = i + 1; j < pts.length; j++) {
-          const dx = pts[i].x - pts[j].x
-          const dy = pts[i].y - pts[j].y
-          const d = Math.sqrt(dx * dx + dy * dy)
-          if (d < MAX_DIST) {
-            ctx.beginPath()
-            ctx.strokeStyle = `rgba(74,222,128,${(1 - d / MAX_DIST) * 0.18})`
-            ctx.lineWidth = 0.5
-            ctx.moveTo(pts[i].x, pts[i].y)
-            ctx.lineTo(pts[j].x, pts[j].y)
-            ctx.stroke()
-          }
-        }
-      }
-
-      pts.forEach((p) => {
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(74,222,128,0.45)'
-        ctx.fill()
-        p.x += p.vx
-        p.y += p.vy
-        if (p.x < 0 || p.x > canvas.width) p.vx *= -1
-        if (p.y < 0 || p.y > canvas.height) p.vy *= -1
-      })
-
-      animId = requestAnimationFrame(draw)
-    }
-    draw()
-
-    return () => {
-      window.removeEventListener('resize', resize)
-      cancelAnimationFrame(animId)
-    }
-  }, [])
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{
-        position: 'absolute',
-        inset: 0,
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        opacity: 0.6,
-      }}
-    />
-  )
-}
+import ParticleCanvas from '../components/ParticleCanvas'
 
 export default function Slide01_Title() {
   return (
@@ -95,7 +13,6 @@ export default function Slide01_Title() {
         alignItems: 'flex-start',
         justifyContent: 'center',
         position: 'relative',
-        background: 'linear-gradient(90deg, rgba(0,0,0,0.85) 42%, rgba(0,0,0,0.2) 70%, transparent 100%)',
         paddingLeft: '6vw',
       }}
     >

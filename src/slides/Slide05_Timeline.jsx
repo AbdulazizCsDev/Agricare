@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import TimelineGantt from '../components/visuals/TimelineGantt'
+import ParticleCanvas from '../components/ParticleCanvas'
 
 export default function Slide05_Timeline() {
   return (
@@ -13,8 +14,10 @@ export default function Slide05_Timeline() {
         gap: 36,
         maxWidth: '58vw',
         background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)',
+        position: 'relative',
       }}
     >
+      <ParticleCanvas opacity={0.4} />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}

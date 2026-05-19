@@ -1,12 +1,16 @@
 import { useEffect, useRef } from 'react'
 
-/* ─── Camera targets per section (lx injected dynamically) ───── */
+/*
+ * Camera looks at the CONTENT area (left side).
+ * Plant is placed at the far right of the viewport in world space.
+ * It appears naturally on the right because the camera is NOT pointing at it.
+ */
 const CAM_STATES = {
-  hero:         { x: -0.5, y: 1.0, z: 6.5, ly: 1.0, lz: 0 },
-  problem:      { x:  0.0, y: 1.6, z: 7.5, ly: 1.4, lz: 0 },
-  solution:     { x:  0.0, y: 0.4, z: 7.0, ly: 0.8, lz: 0 },
-  timeline:     { x: -1.5, y: 1.2, z: 6.0, ly: 1.0, lz: 0 },
-  architecture: { x:  0.5, y: 1.4, z: 6.0, ly: 1.2, lz: 0 },
+  hero:         { x: -1.0, y: 1.0, z: 6.5, lx: -0.5, ly: 1.0, lz: 0 },
+  problem:      { x: -0.5, y: 1.8, z: 7.2, lx: -0.5, ly: 1.6, lz: 0 },
+  solution:     { x: -0.5, y: 0.6, z: 7.0, lx: -0.5, ly: 0.6, lz: 0 },
+  timeline:     { x: -1.5, y: 1.2, z: 6.0, lx: -1.0, ly: 1.0, lz: 0 },
+  architecture: { x: -0.5, y: 1.4, z: 6.0, lx: -0.5, ly: 1.2, lz: 0 },
 }
 
 const FX = {
@@ -68,13 +72,13 @@ export default function PlantBackground() {
       /* ── Camera ───────────────────────────────────────────── */
       const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
 
-      /* ── Dynamic plant X — tracks right edge of viewport ─── */
+      /* ── Dynamic plant X — right edge of viewport in world space ─ */
       const getPlantX = () => {
         const aspect = window.innerWidth / window.innerHeight
-        // Visible half-width in world units at z=0 with camera at (camX=-0.5, z=6.5, fov=36)
+        // Visible half-width at z=0 with camera at (x=-1, z=6.5, fov=36)
         const halfW = Math.tan(18 * Math.PI / 180) * 6.5 * aspect
-        // Place plant 1.1 units inward from the right edge so left half is always visible
-        return -0.5 + halfW - 1.1
+        // Right edge of screen = camX + halfW; pull plant 0.9u inward
+        return -1.0 + halfW - 0.9
       }
       let plantX = getPlantX()
 
@@ -84,7 +88,6 @@ export default function PlantBackground() {
       const ambient = new THREE.AmbientLight(0xffffff, 0.6)
       scene.add(ambient)
 
-      // Top spotlight — dramatic downward beam
       const topSpot = new THREE.SpotLight(0xffffff, 18, 30, Math.PI / 5.5, 0.35, 1.2)
       topSpot.position.set(plantX, 12, 2)
       topSpot.target.position.set(plantX, 0, 0)
@@ -144,7 +147,7 @@ export default function PlantBackground() {
         const box    = new THREE.Box3().setFromObject(model)
         const size   = box.getSize(new THREE.Vector3())
         const center = box.getCenter(new THREE.Vector3())
-        const scale  = 6.24 / Math.max(size.x, size.y, size.z)  // 4.8 × 1.3
+        const scale  = 6.24 / Math.max(size.x, size.y, size.z)
 
         model.scale.setScalar(scale)
         model.position.sub(center.multiplyScalar(scale))
@@ -157,7 +160,7 @@ export default function PlantBackground() {
             child.material = child.material.clone()
             child.material.envMapIntensity = 1.0
             meshData.push({
-              mesh: child,
+              mesh:  child,
               origR: child.material.color.r,
               origG: child.material.color.g,
               origB: child.material.color.b,
@@ -170,7 +173,7 @@ export default function PlantBackground() {
         modelReady = true
       })
 
-      /* ── Resize — recompute plant position & lights ───────── */
+      /* ── Resize ───────────────────────────────────────────── */
       const repositionLights = () => {
         topSpot.position.setX(plantX)
         topSpot.target.position.setX(plantX)
@@ -201,30 +204,35 @@ export default function PlantBackground() {
 
       /* ── Lerp state ───────────────────────────────────────── */
       const lv = {
-        camX: makeVal(-0.5), camY: makeVal(1.0),  camZ: makeVal(6.5),
-        lkX:  makeVal(plantX), lkY: makeVal(1.0), lkZ: makeVal(0),
+        camX: makeVal(-1.0), camY: makeVal(1.0),  camZ: makeVal(6.5),
+        lkX:  makeVal(-0.5), lkY:  makeVal(1.0),  lkZ:  makeVal(0),
         mx:   makeVal(0),    my:   makeVal(0),
         sick: makeVal(0),    scan: makeVal(0),
         rimR: makeVal(0.29), rimG: makeVal(0.87), rimB: makeVal(0.5),
         rimI: makeVal(3.0),
+        rotY: makeVal(0),   // section-change rotation impulse
       }
 
       /* ── Animate ──────────────────────────────────────────── */
       let raf
-      let time    = 0
-      let scanY   = -0.5
-      let scanDir = 1
+      let time     = 0
+      let scanY    = -0.5
+      let scanDir  = 1
+      let prevSec  = 'hero'
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
         time += 0.01
 
         const sec    = sectionRef.current || 'hero'
-        // Inject current plantX so camera always tracks the repositioned plant
-        const camTgt = { ...CAM_STATES[sec], lx: plantX }
-        // Architecture camera stays to the right of the plant
-        if (sec === 'architecture') camTgt.x = plantX + 0.5
+        const camTgt = CAM_STATES[sec]
         const fxTgt  = FX[sec]
+
+        // Section change → fire a rotation impulse
+        if (sec !== prevSec) {
+          lv.rotY.v += 0.28
+          prevSec = sec
+        }
 
         const cx  = lv.camX.v = lerp(lv.camX.v, camTgt.x,  0.055)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
@@ -240,10 +248,12 @@ export default function PlantBackground() {
         const rB   = lv.rimB.v = lerp(lv.rimB.v, fxTgt.rimB, 0.04)
         const rI   = lv.rimI.v = lerp(lv.rimI.v, fxTgt.rimI, 0.04)
 
-        const mx = lv.mx.v = lerp(lv.mx.v, mxRaw, 0.1)
-        const my = lv.my.v = lerp(lv.my.v, myRaw, 0.1)
+        const mx   = lv.mx.v  = lerp(lv.mx.v,   mxRaw, 0.1)
+        const my   = lv.my.v  = lerp(lv.my.v,   myRaw, 0.1)
+        // Rotation impulse decays to 0
+        const rotY = lv.rotY.v = lerp(lv.rotY.v, 0, 0.04)
 
-        camera.position.set(cx + mx * 0.22, cy - my * 0.14, cz)
+        camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
         rim.color.setRGB(rR, rG, rB)
@@ -256,7 +266,8 @@ export default function PlantBackground() {
 
         if (modelReady) {
           const wilt = sick * 0.05
-          group.rotation.y = Math.sin(time * 0.28) * 0.012 + mx * 0.03
+          // Base sway + impulse rotation when section changes
+          group.rotation.y = Math.sin(time * 0.28) * 0.012 + mx * 0.03 + rotY
           group.rotation.x = -my * 0.04 + Math.sin(time * 0.22) * 0.006
           group.rotation.z = wilt + Math.sin(time * 0.16) * (0.006 + sick * 0.014)
 

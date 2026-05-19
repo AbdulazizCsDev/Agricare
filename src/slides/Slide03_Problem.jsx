@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { AlertTriangle } from 'lucide-react'
+import ParticleCanvas from '../components/ParticleCanvas'
 
 const PROBLEMS = [
   {
@@ -35,8 +36,10 @@ export default function Slide03_Problem() {
         gap: 48,
         maxWidth: '54vw',
         background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)',
+        position: 'relative',
       }}
     >
+      <ParticleCanvas opacity={0.4} />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
