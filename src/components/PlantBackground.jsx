@@ -28,17 +28,11 @@ const FX = {
 
 const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
 
-/* ─── Damped spring for smooth transitions ───────────────────── */
-function makeSpring(val) { return { pos: val, vel: 0 } }
-function stepSpring(s, target, k = 0.055, d = 0.87) {
-  s.vel = s.vel * d + (target - s.pos) * k
-  s.pos += s.vel
-  // snap to rest when nearly settled to prevent micro-jitter
-  if (Math.abs(s.vel) < 0.00008 && Math.abs(s.pos - target) < 0.00008) {
-    s.vel = 0; s.pos = target
-  }
-  return s.pos
-}
+/* ─── Smooth lerp — no overshoot, no vibration ───────────────── */
+function lerp(a, b, t) { return a + (b - a) * t }
+
+/* Simple mutable state object replaces spring */
+function makeVal(v) { return { v } }
 
 export default function PlantBackground() {
   const canvasRef  = useRef(null)
@@ -217,14 +211,14 @@ export default function PlantBackground() {
       }
       window.addEventListener('mousemove', onMouse, { passive: true })
 
-      /* ── Springs (one per interpolated value) ────────────── */
-      const sp = {
-        camX: makeSpring(-0.5), camY: makeSpring(1.0),  camZ: makeSpring(6.5),
-        lkX:  makeSpring(PLANT_X), lkY: makeSpring(1.0), lkZ: makeSpring(0),
-        mx:   makeSpring(0),   my:   makeSpring(0),
-        sick: makeSpring(0),   scan: makeSpring(0),
-        rimR: makeSpring(0.29), rimG: makeSpring(0.87), rimB: makeSpring(0.5),
-        rimI: makeSpring(5.0),
+      /* ── Lerp state ──────────────────────────────────────── */
+      const lv = {
+        camX: makeVal(-0.5), camY: makeVal(1.0),  camZ: makeVal(6.5),
+        lkX:  makeVal(PLANT_X), lkY: makeVal(1.0), lkZ: makeVal(0),
+        mx:   makeVal(0),    my:   makeVal(0),
+        sick: makeVal(0),    scan: makeVal(0),
+        rimR: makeVal(0.29), rimG: makeVal(0.87), rimB: makeVal(0.5),
+        rimI: makeVal(3.0),
       }
 
       /* ── Animate ──────────────────────────────────────────── */
@@ -241,23 +235,23 @@ export default function PlantBackground() {
         const camTgt = CAM_STATES[sec]
         const fxTgt  = FX[sec]
 
-        // ── Spring-step every value ──────────────────────────
-        const cx  = stepSpring(sp.camX,  camTgt.x,  0.018, 0.95)
-        const cy  = stepSpring(sp.camY,  camTgt.y,  0.018, 0.95)
-        const cz  = stepSpring(sp.camZ,  camTgt.z,  0.018, 0.95)
-        const lkx = stepSpring(sp.lkX,   camTgt.lx, 0.018, 0.95)
-        const lky = stepSpring(sp.lkY,   camTgt.ly, 0.018, 0.95)
-        const lkz = stepSpring(sp.lkZ,   camTgt.lz, 0.018, 0.95)
+        // ── Lerp every value (t=0.055 camera, t=0.04 FX, t=0.1 mouse) ─
+        const cx  = lv.camX.v = lerp(lv.camX.v, camTgt.x,  0.055)
+        const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
+        const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  0.055)
+        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  camTgt.lx, 0.055)
+        const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly, 0.055)
+        const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz, 0.055)
 
-        const sick = stepSpring(sp.sick, fxTgt.sick, 0.018, 0.93)
-        const scan = stepSpring(sp.scan, fxTgt.scan, 0.022, 0.92)
-        const rR   = stepSpring(sp.rimR, fxTgt.rimR, 0.022, 0.93)
-        const rG   = stepSpring(sp.rimG, fxTgt.rimG, 0.022, 0.93)
-        const rB   = stepSpring(sp.rimB, fxTgt.rimB, 0.022, 0.93)
-        const rI   = stepSpring(sp.rimI, fxTgt.rimI, 0.022, 0.93)
+        const sick = lv.sick.v = lerp(lv.sick.v, fxTgt.sick, 0.035)
+        const scan = lv.scan.v = lerp(lv.scan.v, fxTgt.scan, 0.035)
+        const rR   = lv.rimR.v = lerp(lv.rimR.v, fxTgt.rimR, 0.04)
+        const rG   = lv.rimG.v = lerp(lv.rimG.v, fxTgt.rimG, 0.04)
+        const rB   = lv.rimB.v = lerp(lv.rimB.v, fxTgt.rimB, 0.04)
+        const rI   = lv.rimI.v = lerp(lv.rimI.v, fxTgt.rimI, 0.04)
 
-        const mx = stepSpring(sp.mx, mxRaw, 0.08, 0.82)
-        const my = stepSpring(sp.my, myRaw, 0.08, 0.82)
+        const mx = lv.mx.v = lerp(lv.mx.v, mxRaw, 0.1)
+        const my = lv.my.v = lerp(lv.my.v, myRaw, 0.1)
 
         // ── Camera ───────────────────────────────────────────
         camera.position.set(cx + mx * 0.22, cy - my * 0.14, cz)
