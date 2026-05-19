@@ -1,12 +1,20 @@
 import { useEffect, useRef } from 'react'
 
+// Plant group is offset to x=2.2 (right side of viewport)
+const PLANT_X = 2.2
+
 /* ─── Camera targets per section ─────────────────────────────── */
 const CAM_STATES = {
-  hero:         { x:  0.0, y: 1.5,  z: 7.2, lx: 0, ly: 1.5, lz: 0 },
-  problem:      { x:  0.4, y: 2.9,  z: 2.6, lx: 0, ly: 2.6, lz: 0 },
-  solution:     { x:  0.3, y: 0.0,  z: 2.8, lx: 0, ly: 0.4, lz: 0 },
-  timeline:     { x: -1.6, y: 1.5,  z: 5.8, lx: 0, ly: 1.2, lz: 0 },
-  architecture: { x:  1.8, y: 1.6,  z: 5.2, lx: 0, ly: 1.2, lz: 0 },
+  // Hero: wide shot showing full plant on right half of screen
+  hero:         { x: -0.5, y: 1.0,  z: 6.5, lx: PLANT_X, ly: 1.0, lz: 0 },
+  // Problem: zoom into upper leaves
+  problem:      { x:  1.5, y: 2.8,  z: 2.5, lx: PLANT_X, ly: 2.5, lz: 0 },
+  // Solution: pull down to base
+  solution:     { x:  1.5, y:-0.2,  z: 2.6, lx: PLANT_X, ly: 0.3, lz: 0 },
+  // Timeline: wide left view
+  timeline:     { x: -1.5, y: 1.2,  z: 6.0, lx: PLANT_X, ly: 1.0, lz: 0 },
+  // Architecture: wide right view
+  architecture: { x:  4.5, y: 1.4,  z: 6.0, lx: PLANT_X, ly: 1.2, lz: 0 },
 }
 
 /* ─── Effect targets per section ─────────────────────────────── */
@@ -70,8 +78,8 @@ export default function PlantBackground() {
       renderer.setClearColor(0x000000, 0)
       renderer.shadowMap.enabled = true
       renderer.shadowMap.type    = THREE.PCFSoftShadowMap
-      renderer.toneMapping       = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure = 1.5
+      renderer.toneMapping         = THREE.ACESFilmicToneMapping
+      renderer.toneMappingExposure = 2.6
 
       /* ── Camera ───────────────────────────────────────────── */
       const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
@@ -86,26 +94,34 @@ export default function PlantBackground() {
       /* ── Scene ────────────────────────────────────────────── */
       const scene = new THREE.Scene()
 
-      const ambient = new THREE.AmbientLight(0x4ade80, 0.55)
+      const ambient = new THREE.AmbientLight(0xffffff, 1.8)
       scene.add(ambient)
 
-      const key = new THREE.DirectionalLight(0xffffff, 3.2)
-      key.position.set(3, 8, 5)
+      // Main key — top-right
+      const key = new THREE.DirectionalLight(0xffffff, 4.5)
+      key.position.set(4, 8, 6)
       key.castShadow = true
       key.shadow.mapSize.setScalar(1024)
       scene.add(key)
 
-      const rim = new THREE.PointLight(0x4ade80, 3.0, 22)
-      rim.position.set(-3, 4, -4)
+      // Strong front fill — faces the plant directly from camera side
+      const front = new THREE.DirectionalLight(0xffffff, 3.5)
+      front.position.set(PLANT_X, 1.5, 8)
+      scene.add(front)
+
+      // Green rim from behind-left
+      const rim = new THREE.PointLight(0x4ade80, 5.0, 28)
+      rim.position.set(PLANT_X - 4, 4, -5)
       scene.add(rim)
 
-      const fill = new THREE.PointLight(0x60a5fa, 0.9, 16)
-      fill.position.set(4, 2, 2)
+      // Warm fill from right side
+      const fill = new THREE.PointLight(0xa8edbc, 2.5, 20)
+      fill.position.set(PLANT_X + 3, 2, 3)
       scene.add(fill)
 
       /* ── Disease light (problem section) ─────────────────── */
-      const diseaseLight = new THREE.PointLight(0xff6a00, 0, 5)
-      diseaseLight.position.set(0.3, 1.5, 0.5)
+      const diseaseLight = new THREE.PointLight(0xff6a00, 0, 7)
+      diseaseLight.position.set(PLANT_X, 1.5, 0.5)
       scene.add(diseaseLight)
 
       /* ── Scan plane (solution section) ───────────────────── */
@@ -158,11 +174,11 @@ export default function PlantBackground() {
         const box    = new THREE.Box3().setFromObject(model)
         const size   = box.getSize(new THREE.Vector3())
         const center = box.getCenter(new THREE.Vector3())
-        const scale  = 3.8 / Math.max(size.x, size.y, size.z)
+        const scale  = 4.8 / Math.max(size.x, size.y, size.z)
 
         model.scale.setScalar(scale)
         model.position.sub(center.multiplyScalar(scale))
-        model.position.y -= 0.15
+        model.position.y -= 0.4
 
         model.traverse((child) => {
           if (!child.isMesh) return
@@ -181,6 +197,8 @@ export default function PlantBackground() {
         })
 
         group.add(model)
+        // Fix plant to right side of viewport
+        group.position.x = PLANT_X
         modelReady = true
       })
 
@@ -194,13 +212,12 @@ export default function PlantBackground() {
 
       /* ── Springs (one per interpolated value) ────────────── */
       const sp = {
-        camX: makeSpring(0),   camY: makeSpring(1.5),  camZ: makeSpring(7.2),
-        lkX:  makeSpring(0),   lkY:  makeSpring(1.5),  lkZ:  makeSpring(0),
-        pRotY: makeSpring(0),
+        camX: makeSpring(-0.5), camY: makeSpring(1.0),  camZ: makeSpring(6.5),
+        lkX:  makeSpring(PLANT_X), lkY: makeSpring(1.0), lkZ: makeSpring(0),
         mx:   makeSpring(0),   my:   makeSpring(0),
         sick: makeSpring(0),   scan: makeSpring(0),
         rimR: makeSpring(0.29), rimG: makeSpring(0.87), rimB: makeSpring(0.5),
-        rimI: makeSpring(3.0),
+        rimI: makeSpring(5.0),
       }
 
       /* ── Animate ──────────────────────────────────────────── */
@@ -241,8 +258,8 @@ export default function PlantBackground() {
 
         // ── Rim light (color + intensity spring) ─────────────
         rim.color.setRGB(rR, rG, rB)
-        rim.intensity = rI + Math.sin(time * 0.55) * 0.4
-        rim.position.x = -3 + Math.sin(time * 0.42) * 0.6
+        rim.intensity = rI + Math.sin(time * 0.55) * 0.6
+        rim.position.x = (PLANT_X - 4) + Math.sin(time * 0.42) * 0.6
 
         // ── Disease light ─────────────────────────────────────
         const flicker = sick * (1.8 + Math.sin(time * 9.5) * 0.7 + Math.sin(time * 17) * 0.3)
@@ -277,13 +294,13 @@ export default function PlantBackground() {
           if (scanY < -0.5) { scanY = -0.5; scanDir =  1 }
 
           const opBase = scan * 0.75
-          scanPlane.position.set(0, scanY, 0)
+          scanPlane.position.set(PLANT_X, scanY, 0)
           scanMat.opacity = opBase + Math.sin(time * 4) * 0.15 * scan
 
-          glowVolume.position.set(0, scanY - 0.22 * scanDir, 0)
+          glowVolume.position.set(PLANT_X, scanY - 0.22 * scanDir, 0)
           glowMat.opacity = opBase * 0.18
 
-          scanLight.position.set(0, scanY, 0)
+          scanLight.position.set(PLANT_X, scanY, 0)
           scanLight.intensity = scan * (2.0 + Math.sin(time * 4) * 0.5)
         } else {
           scanMat.opacity  = 0
