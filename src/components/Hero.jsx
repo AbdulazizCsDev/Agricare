@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import PlantScene from './PlantScene';
 import './Hero.css';
 
 export default function Hero() {
@@ -43,7 +42,7 @@ export default function Hero() {
 
   return (
     <section id="hero" className="hero">
-      <div className="hero-inner hero-two-col">
+      <div className="hero-inner">
         <div className="hero-content">
           <div className="hero-badge" data-reveal>
             <span className="badge-pulse" />
@@ -115,13 +114,6 @@ export default function Hero() {
             </a>
           </div>
         </div>
-
-        {/* ── النبتة 3D ── */}
-        <div className="hero-visual" data-reveal data-reveal-delay="3">
-          <div className="plant-glow" aria-hidden="true" />
-          <PlantScene />
-        </div>
-
       </div>
 
       {/* Scroll indicator */}

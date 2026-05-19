@@ -2,9 +2,6 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Logo from '../components/Logo'
 
-const VIDEO_URL =
-  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260411_104032_69319010-2458-492b-b04d-b40a5dfa4482.mp4'
-
 function ParticleCanvas() {
   const canvasRef = useRef(null)
 
@@ -21,15 +18,15 @@ function ParticleCanvas() {
     resize()
     window.addEventListener('resize', resize)
 
-    const COUNT = 70
-    const MAX_DIST = 160
+    const COUNT = 55
+    const MAX_DIST = 150
 
     const pts = Array.from({ length: COUNT }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      vx: (Math.random() - 0.5) * 0.35,
-      vy: (Math.random() - 0.5) * 0.35,
-      r: Math.random() * 1.8 + 0.8,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.6 + 0.6,
     }))
 
     const draw = () => {
@@ -42,8 +39,8 @@ function ParticleCanvas() {
           const d = Math.sqrt(dx * dx + dy * dy)
           if (d < MAX_DIST) {
             ctx.beginPath()
-            ctx.strokeStyle = `rgba(74,222,128,${(1 - d / MAX_DIST) * 0.22})`
-            ctx.lineWidth = 0.6
+            ctx.strokeStyle = `rgba(74,222,128,${(1 - d / MAX_DIST) * 0.18})`
+            ctx.lineWidth = 0.5
             ctx.moveTo(pts[i].x, pts[i].y)
             ctx.lineTo(pts[j].x, pts[j].y)
             ctx.stroke()
@@ -54,7 +51,7 @@ function ParticleCanvas() {
       pts.forEach((p) => {
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(74,222,128,0.55)'
+        ctx.fillStyle = 'rgba(74,222,128,0.45)'
         ctx.fill()
         p.x += p.vx
         p.y += p.vy
@@ -81,21 +78,13 @@ function ParticleCanvas() {
         width: '100%',
         height: '100%',
         pointerEvents: 'none',
-        opacity: 0.75,
+        opacity: 0.6,
       }}
     />
   )
 }
 
 export default function Slide01_Title() {
-  const videoRef = useRef(null)
-
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    v.play().catch(() => {})
-  }, [])
-
   return (
     <div
       style={{
@@ -106,38 +95,10 @@ export default function Slide01_Title() {
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
-        gap: 0,
+        background: 'rgba(10,20,16,0.45)',
       }}
     >
-      {/* Video background */}
-      <video
-        ref={videoRef}
-        src={VIDEO_URL}
-        muted
-        playsInline
-        loop
-        style={{
-          position: 'absolute',
-          inset: 0,
-          width: '100%',
-          height: '100%',
-          objectFit: 'cover',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Dark overlay so text stays readable */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'linear-gradient(135deg, rgba(10,20,16,0.82) 0%, rgba(10,20,16,0.70) 50%, rgba(10,20,16,0.82) 100%)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Particle layer on top */}
+      {/* Particle layer */}
       <ParticleCanvas />
 
       {/* Content */}
@@ -154,7 +115,6 @@ export default function Slide01_Title() {
           maxWidth: 820,
         }}
       >
-        {/* Logo hero */}
         <motion.div
           initial={{ opacity: 0, scale: 0.78 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -163,7 +123,6 @@ export default function Slide01_Title() {
           <Logo size="xl" animated={true} />
         </motion.div>
 
-        {/* Tagline */}
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -180,7 +139,6 @@ export default function Slide01_Title() {
           AI-Powered Crop Disease Diagnosis
         </motion.p>
 
-        {/* Elevator pitch */}
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
@@ -197,7 +155,6 @@ export default function Slide01_Title() {
           deployable disease diagnosis for farmers, retailers, and crop consultants."
         </motion.p>
 
-        {/* Press hint */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -212,7 +169,7 @@ export default function Slide01_Title() {
             marginTop: 8,
           }}
         >
-          <span>Press</span>
+          <span>Scroll to explore</span>
           <motion.span
             animate={{ opacity: [1, 0.15, 1] }}
             transition={{ duration: 1.1, repeat: Infinity }}
@@ -227,9 +184,8 @@ export default function Slide01_Title() {
               color: '#4ade80',
             }}
           >
-            →
+            ↓
           </motion.span>
-          <span>to begin</span>
         </motion.div>
       </div>
     </div>
