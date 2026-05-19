@@ -2,6 +2,9 @@ import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import Logo from '../components/Logo'
 
+const VIDEO_URL =
+  'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260411_104032_69319010-2458-492b-b40a5dfa4482.mp4'
+
 function ParticleCanvas() {
   const canvasRef = useRef(null)
 
@@ -85,6 +88,14 @@ function ParticleCanvas() {
 }
 
 export default function Slide01_Title() {
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    v.play().catch(() => {})
+  }, [])
+
   return (
     <div
       style={{
@@ -98,8 +109,38 @@ export default function Slide01_Title() {
         gap: 0,
       }}
     >
+      {/* Video background */}
+      <video
+        ref={videoRef}
+        src={VIDEO_URL}
+        muted
+        playsInline
+        loop
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Dark overlay so text stays readable */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(135deg, rgba(10,20,16,0.82) 0%, rgba(10,20,16,0.70) 50%, rgba(10,20,16,0.82) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Particle layer on top */}
       <ParticleCanvas />
 
+      {/* Content */}
       <div
         style={{
           position: 'relative',

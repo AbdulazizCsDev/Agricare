@@ -6,7 +6,6 @@ import Slide01_Title from './slides/Slide01_Title'
 import Slide02_Team from './slides/Slide02_Team'
 import Slide03_Problem from './slides/Slide03_Problem'
 import Slide04_Solution from './slides/Slide04_Solution'
-import Slide05_Demo from './slides/Slide05_Demo'
 import Slide05_Timeline from './slides/Slide05_Timeline'
 import Slide06_Architecture from './slides/Slide06_Architecture'
 
@@ -15,7 +14,6 @@ const SLIDES = [
   Slide02_Team,
   Slide03_Problem,
   Slide04_Solution,
-  Slide05_Demo,
   Slide05_Timeline,
   Slide06_Architecture,
 ]
