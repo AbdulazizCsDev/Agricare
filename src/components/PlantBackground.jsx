@@ -5,21 +5,21 @@ const PLANT_X = 2.2
 
 /* ─── Camera targets per section ─────────────────────────────── */
 const CAM_STATES = {
-  // Hero: wide shot showing full plant on right half of screen
+  // Hero: full plant visible on right half
   hero:         { x: -0.5, y: 1.0,  z: 6.5, lx: PLANT_X, ly: 1.0, lz: 0 },
-  // Problem: zoom into upper leaves
-  problem:      { x:  1.5, y: 2.8,  z: 2.5, lx: PLANT_X, ly: 2.5, lz: 0 },
-  // Solution: pull down to base
-  solution:     { x:  1.5, y:-0.2,  z: 2.6, lx: PLANT_X, ly: 0.3, lz: 0 },
+  // Problem: elevated, far enough to see leaves in context
+  problem:      { x:  0.5, y: 2.4,  z: 5.0, lx: PLANT_X, ly: 2.2, lz: 0 },
+  // Solution: lowered, far enough to see base in context
+  solution:     { x:  0.5, y: 0.2,  z: 5.0, lx: PLANT_X, ly: 0.6, lz: 0 },
   // Timeline: wide left view
   timeline:     { x: -1.5, y: 1.2,  z: 6.0, lx: PLANT_X, ly: 1.0, lz: 0 },
   // Architecture: wide right view
-  architecture: { x:  4.5, y: 1.4,  z: 6.0, lx: PLANT_X, ly: 1.2, lz: 0 },
+  architecture: { x:  4.0, y: 1.4,  z: 6.0, lx: PLANT_X, ly: 1.2, lz: 0 },
 }
 
 /* ─── Effect targets per section ─────────────────────────────── */
 const FX = {
-  hero:         { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.0 },
+  hero:         { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.0  },
   problem:      { sick: 1, scan: 0, rimR: 0.85, rimG: 0.25, rimB: 0.05, rimI: 4.0 },
   solution:     { sick: 0, scan: 1, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.5 },
   timeline:     { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
@@ -235,19 +235,19 @@ export default function PlantBackground() {
         const fxTgt  = FX[sec]
 
         // ── Spring-step every value ──────────────────────────
-        const cx  = stepSpring(sp.camX,  camTgt.x,  0.055, 0.87)
-        const cy  = stepSpring(sp.camY,  camTgt.y,  0.055, 0.87)
-        const cz  = stepSpring(sp.camZ,  camTgt.z,  0.055, 0.87)
-        const lkx = stepSpring(sp.lkX,   camTgt.lx, 0.055, 0.87)
-        const lky = stepSpring(sp.lkY,   camTgt.ly, 0.055, 0.87)
-        const lkz = stepSpring(sp.lkZ,   camTgt.lz, 0.055, 0.87)
+        const cx  = stepSpring(sp.camX,  camTgt.x,  0.028, 0.92)
+        const cy  = stepSpring(sp.camY,  camTgt.y,  0.028, 0.92)
+        const cz  = stepSpring(sp.camZ,  camTgt.z,  0.028, 0.92)
+        const lkx = stepSpring(sp.lkX,   camTgt.lx, 0.028, 0.92)
+        const lky = stepSpring(sp.lkY,   camTgt.ly, 0.028, 0.92)
+        const lkz = stepSpring(sp.lkZ,   camTgt.lz, 0.028, 0.92)
 
-        const sick = stepSpring(sp.sick, fxTgt.sick, 0.03, 0.9)
-        const scan = stepSpring(sp.scan, fxTgt.scan, 0.04, 0.88)
-        const rR   = stepSpring(sp.rimR, fxTgt.rimR, 0.04, 0.9)
-        const rG   = stepSpring(sp.rimG, fxTgt.rimG, 0.04, 0.9)
-        const rB   = stepSpring(sp.rimB, fxTgt.rimB, 0.04, 0.9)
-        const rI   = stepSpring(sp.rimI, fxTgt.rimI, 0.04, 0.9)
+        const sick = stepSpring(sp.sick, fxTgt.sick, 0.018, 0.93)
+        const scan = stepSpring(sp.scan, fxTgt.scan, 0.022, 0.92)
+        const rR   = stepSpring(sp.rimR, fxTgt.rimR, 0.022, 0.93)
+        const rG   = stepSpring(sp.rimG, fxTgt.rimG, 0.022, 0.93)
+        const rB   = stepSpring(sp.rimB, fxTgt.rimB, 0.022, 0.93)
+        const rI   = stepSpring(sp.rimI, fxTgt.rimI, 0.022, 0.93)
 
         const mx = stepSpring(sp.mx, mxRaw, 0.08, 0.82)
         const my = stepSpring(sp.my, myRaw, 0.08, 0.82)
@@ -268,8 +268,10 @@ export default function PlantBackground() {
 
         if (modelReady) {
           // ── Plant sway ─────────────────────────────────────
-          const wilt = sick * 0.06 // wilt sideways when sick
-          group.rotation.y = Math.sin(time * 0.32) * 0.025 + mx * 0.055
+          const camVel = Math.abs(sp.camX.vel) + Math.abs(sp.camY.vel) + Math.abs(sp.camZ.vel)
+          const transitionSpin = camVel * 1.8
+          const wilt = sick * 0.06
+          group.rotation.y = Math.sin(time * 0.32) * 0.025 + mx * 0.055 + transitionSpin
           group.rotation.x = -my * 0.07  + Math.sin(time * 0.26) * 0.012
           group.rotation.z = wilt + Math.sin(time * 0.18) * (0.01 + sick * 0.02)
 
