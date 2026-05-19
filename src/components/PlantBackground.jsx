@@ -1,7 +1,61 @@
 import { useEffect, useRef } from 'react'
 
+// Camera + plant state per section
+const STATES = {
+  hero: {
+    camX: 0, camY: 1.4, camZ: 7.0,
+    lookX: 0, lookY: 1.4, lookZ: 0,
+    plantX: 0,   plantRotY: 0,
+  },
+  problem: {
+    // Zoom into the leaves — upper part of the plant
+    camX: 0.6, camY: 2.8, camZ: 2.4,
+    lookX: 0,  lookY: 2.5, lookZ: 0,
+    plantX: 0, plantRotY: 0.25,
+  },
+  solution: {
+    // Pull down to the base / roots area
+    camX: 0.4, camY: -0.2, camZ: 2.6,
+    lookX: 0,  lookY:  0.2, lookZ: 0,
+    plantX: 0, plantRotY: -0.3,
+  },
+  timeline: {
+    camX: -1.8, camY: 1.5, camZ: 5.8,
+    lookX:  0,  lookY: 1.2, lookZ: 0,
+    plantX: -0.4, plantRotY: -0.7,
+  },
+  architecture: {
+    camX: 2.0, camY: 1.6, camZ: 5.2,
+    lookX: 0,  lookY: 1.2, lookZ: 0,
+    plantX: 0.5, plantRotY: 0.8,
+  },
+}
+
+const SECTION_IDS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
+
+function lerp(a, b, t) { return a + (b - a) * t }
+
 export default function PlantBackground() {
-  const canvasRef = useRef(null)
+  const canvasRef  = useRef(null)
+  const sectionRef = useRef('hero') // currently active section
+
+  // Track active section via IntersectionObserver
+  useEffect(() => {
+    const observers = []
+    SECTION_IDS.forEach((id) => {
+      const el = document.getElementById(id)
+      if (!el) return
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) sectionRef.current = id
+        },
+        { threshold: 0.35 }
+      )
+      obs.observe(el)
+      observers.push(obs)
+    })
+    return () => observers.forEach((o) => o.disconnect())
+  }, [])
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
@@ -19,61 +73,47 @@ export default function PlantBackground() {
       const canvas = canvasRef.current
       if (!canvas) return
 
-      // ── Renderer ────────────────────────────────────────────
-      const renderer = new THREE.WebGLRenderer({
-        canvas,
-        alpha: true,
-        antialias: true,
-      })
+      // ── Renderer ─────────────────────────────────────────────
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
       renderer.setClearColor(0x000000, 0)
       renderer.shadowMap.enabled = true
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap
-      renderer.toneMapping = THREE.ACESFilmicToneMapping
+      renderer.shadowMap.type    = THREE.PCFSoftShadowMap
+      renderer.toneMapping       = THREE.ACESFilmicToneMapping
       renderer.toneMappingExposure = 1.4
 
+      // ── Camera ───────────────────────────────────────────────
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
+
       const setSize = () => {
-        renderer.setSize(window.innerWidth, window.innerHeight)
-        camera.aspect = window.innerWidth / window.innerHeight
+        const w = window.innerWidth, h = window.innerHeight
+        renderer.setSize(w, h)
+        camera.aspect = w / h
         camera.updateProjectionMatrix()
       }
-
-      // ── Camera ───────────────────────────────────────────────
-      const camera = new THREE.PerspectiveCamera(
-        40,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        100
-      )
-      // Initial camera position — viewing plant from the front-right
-      camera.position.set(2.2, 1.6, 5.5)
-      camera.lookAt(0, 1.2, 0)
       setSize()
+      window.addEventListener('resize', setSize)
 
       // ── Scene ────────────────────────────────────────────────
       const scene = new THREE.Scene()
 
-      // Ambient — cool green tint matching the site palette
-      scene.add(new THREE.AmbientLight(0x4ade80, 0.35))
+      scene.add(new THREE.AmbientLight(0x4ade80, 0.5))
 
-      // Main key light
-      const key = new THREE.DirectionalLight(0xffffff, 2.8)
-      key.position.set(3, 6, 4)
+      const key = new THREE.DirectionalLight(0xffffff, 3.0)
+      key.position.set(3, 7, 4)
       key.castShadow = true
       key.shadow.mapSize.setScalar(1024)
       scene.add(key)
 
-      // Rim light — green glow from behind
-      const rim = new THREE.PointLight(0x4ade80, 2.5, 18)
+      const rim = new THREE.PointLight(0x4ade80, 3.0, 20)
       rim.position.set(-3, 4, -4)
       scene.add(rim)
 
-      // Fill — soft cool from side
-      const fill = new THREE.PointLight(0x60a5fa, 0.9, 14)
+      const fill = new THREE.PointLight(0x60a5fa, 1.0, 16)
       fill.position.set(4, 2, 2)
       scene.add(fill)
 
-      // ── Load model ──────────────────────────────────────────
+      // ── Load model ───────────────────────────────────────────
       const draco = new DRACOLoader()
       draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
 
@@ -82,95 +122,94 @@ export default function PlantBackground() {
 
       const group = new THREE.Group()
       scene.add(group)
+      let modelReady = false
 
       loader.load('/plant/scene.gltf', (gltf) => {
         if (cancelled) return
 
         const model = gltf.scene
-
-        // Normalize size
         const box    = new THREE.Box3().setFromObject(model)
         const size   = box.getSize(new THREE.Vector3())
         const center = box.getCenter(new THREE.Vector3())
-        const maxDim = Math.max(size.x, size.y, size.z)
-        const scale  = 3.2 / maxDim
+        const scale  = 3.6 / Math.max(size.x, size.y, size.z)
 
         model.scale.setScalar(scale)
         model.position.sub(center.multiplyScalar(scale))
-        model.position.y -= 0.3
+        model.position.y -= 0.2
 
         model.traverse((child) => {
           if (child.isMesh) {
             child.castShadow    = true
             child.receiveShadow = true
-            if (child.material) {
-              child.material.envMapIntensity = 1.0
-            }
+            if (child.material) child.material.envMapIntensity = 1.0
           }
         })
 
         group.add(model)
-
-        // Position plant to the right side of the canvas
-        group.position.set(1.0, 0, 0)
+        modelReady = true
       })
 
-      // ── Scroll state ─────────────────────────────────────────
-      // scrollProgress 0→1 across the full page height
-      let scrollProgress = 0
-      let targetProgress = 0
-
-      const onScroll = () => {
-        const maxScroll = document.documentElement.scrollHeight - window.innerHeight
-        targetProgress = maxScroll > 0 ? window.scrollY / maxScroll : 0
-      }
-      window.addEventListener('scroll', onScroll, { passive: true })
-
-      // Mouse parallax (subtle)
+      // ── Mouse parallax ───────────────────────────────────────
       let mouseX = 0, mouseY = 0
       const onMouse = (e) => {
         mouseX = (e.clientX / window.innerWidth  - 0.5)
         mouseY = (e.clientY / window.innerHeight - 0.5)
       }
       window.addEventListener('mousemove', onMouse, { passive: true })
-      window.addEventListener('resize', setSize)
+
+      // ── Lerped state ─────────────────────────────────────────
+      const cur = {
+        camX: 0, camY: 1.4, camZ: 7.0,
+        lookX: 0, lookY: 1.4, lookZ: 0,
+        plantX: 0, plantRotY: 0,
+      }
 
       // ── Animate ──────────────────────────────────────────────
       let raf
       let time = 0
+      const speed = 0.04 // lerp speed
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
         time += 0.008
 
-        // Smooth scroll lerp
-        scrollProgress += (targetProgress - scrollProgress) * 0.06
+        const target = STATES[sectionRef.current] || STATES.hero
 
-        // ── Plant reacts to scroll ──
-        // Rotate Y: full rotation across the page (0 → ~180°)
-        group.rotation.y = scrollProgress * Math.PI * 1.6 + Math.sin(time * 0.4) * 0.04
+        // Smooth lerp all values
+        cur.camX     = lerp(cur.camX,     target.camX,     speed)
+        cur.camY     = lerp(cur.camY,     target.camY,     speed)
+        cur.camZ     = lerp(cur.camZ,     target.camZ,     speed)
+        cur.lookX    = lerp(cur.lookX,    target.lookX,    speed)
+        cur.lookY    = lerp(cur.lookY,    target.lookY,    speed)
+        cur.lookZ    = lerp(cur.lookZ,    target.lookZ,    speed)
+        cur.plantX   = lerp(cur.plantX,   target.plantX,   speed)
+        cur.plantRotY = lerp(cur.plantRotY, target.plantRotY, speed)
 
-        // Tilt slightly based on scroll
-        group.rotation.x = scrollProgress * 0.3 + mouseY * 0.12
+        // Camera with mouse parallax
+        camera.position.set(
+          cur.camX + mouseX * 0.25,
+          cur.camY - mouseY * 0.15,
+          cur.camZ
+        )
+        camera.lookAt(cur.lookX, cur.lookY, cur.lookZ)
 
-        // Gentle sway
-        group.rotation.z = Math.sin(time * 0.35) * 0.018 + mouseX * 0.06
+        if (modelReady) {
+          // Plant position
+          group.position.x = cur.plantX
 
-        // Breathing scale
-        const breathe = 1 + Math.sin(time * 0.8) * 0.007
-        group.scale.setScalar(breathe)
+          // Scroll-driven rotation + gentle sway
+          group.rotation.y = cur.plantRotY + Math.sin(time * 0.35) * 0.03 + mouseX * 0.06
+          group.rotation.x = -mouseY * 0.08 + Math.sin(time * 0.28) * 0.015
+          group.rotation.z =  Math.sin(time * 0.22) * 0.012
 
-        // ── Camera orbits slightly with scroll ──
-        const camRadius = 5.5
-        const camAngle  = scrollProgress * Math.PI * 0.5 // quarter orbit
-        camera.position.x = Math.sin(camAngle) * camRadius * 0.4 + 2.2 + mouseX * 0.3
-        camera.position.y = 1.6 - scrollProgress * 0.6  + mouseY * 0.2
-        camera.position.z = camRadius - scrollProgress * 0.8
-        camera.lookAt(0, 1.0 - scrollProgress * 0.3, 0)
+          // Breathing
+          const breathe = 1 + Math.sin(time * 0.75) * 0.007
+          group.scale.setScalar(breathe)
+        }
 
-        // ── Lights pulse ──
-        rim.position.x = -3 + Math.sin(time * 0.5) * 0.6
-        rim.intensity   = 2.5 + Math.sin(time * 0.7) * 0.4
+        // Lights animate
+        rim.position.x = -3 + Math.sin(time * 0.45) * 0.7
+        rim.intensity   = 3.0 + Math.sin(time * 0.6) * 0.5
 
         renderer.render(scene, camera)
       }
@@ -178,9 +217,8 @@ export default function PlantBackground() {
 
       cleanup = () => {
         cancelAnimationFrame(raf)
-        window.removeEventListener('scroll', onScroll)
         window.removeEventListener('mousemove', onMouse)
-        window.removeEventListener('resize', setSize)
+        window.removeEventListener('resize',    setSize)
         renderer.dispose()
         draco.dispose()
       }
@@ -198,8 +236,7 @@ export default function PlantBackground() {
       aria-hidden="true"
       style={{
         position: 'fixed',
-        top: 0,
-        left: 0,
+        top: 0, left: 0,
         width: '100%',
         height: '100%',
         pointerEvents: 'none',

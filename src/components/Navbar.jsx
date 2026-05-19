@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react'
 import Logo from './Logo'
 
 const NAV_ITEMS = [
-  { id: 'team',         label: 'Team' },
   { id: 'problem',      label: 'Problem' },
   { id: 'solution',     label: 'Solution' },
   { id: 'timeline',     label: 'Timeline' },
   { id: 'architecture', label: 'Architecture' },
 ]
 
-const SECTIONS = ['hero', 'team', 'problem', 'solution', 'timeline', 'architecture']
+const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)

@@ -1,49 +1,54 @@
 import Navbar from './components/Navbar'
 import PlantBackground from './components/PlantBackground'
 import Slide01_Title from './slides/Slide01_Title'
-import Slide02_Team from './slides/Slide02_Team'
 import Slide03_Problem from './slides/Slide03_Problem'
 import Slide04_Solution from './slides/Slide04_Solution'
 import Slide05_Timeline from './slides/Slide05_Timeline'
 import Slide06_Architecture from './slides/Slide06_Architecture'
 
-const sectionStyle = {
-  minHeight: '100vh',
-  position: 'relative',
-  zIndex: 1,
-  overflow: 'hidden',
-  background: 'rgba(10, 20, 16, 0.78)',
-}
-
 export default function App() {
   return (
     <div style={{ background: 'transparent' }}>
-      {/* Fixed 3D plant — sits behind everything */}
       <PlantBackground />
-
       <Navbar />
 
-      <section id="hero" style={{ ...sectionStyle, height: '100vh' }}>
+      {/* Hero — very transparent so plant dominates */}
+      <section
+        id="hero"
+        style={{ height: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden' }}
+      >
         <Slide01_Title />
       </section>
 
-      <section id="team" style={sectionStyle}>
-        <Slide02_Team />
-      </section>
-
-      <section id="problem" style={sectionStyle}>
+      {/* Problem — semi-transparent, camera zooms to leaves */}
+      <section
+        id="problem"
+        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+      >
         <Slide03_Problem />
       </section>
 
-      <section id="solution" style={sectionStyle}>
+      {/* Solution — camera goes to base */}
+      <section
+        id="solution"
+        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+      >
         <Slide04_Solution />
       </section>
 
-      <section id="timeline" style={sectionStyle}>
+      {/* Timeline */}
+      <section
+        id="timeline"
+        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+      >
         <Slide05_Timeline />
       </section>
 
-      <section id="architecture" style={sectionStyle}>
+      {/* Architecture */}
+      <section
+        id="architecture"
+        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+      >
         <Slide06_Architecture />
       </section>
     </div>
