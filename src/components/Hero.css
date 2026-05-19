@@ -25,6 +25,77 @@
   width: 100%;
 }
 
+/* ── Two-column layout ─── */
+.hero-two-col {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  align-items: center;
+  gap: 3rem;
+}
+
+/* ── Plant visual column ─── */
+.hero-visual {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.plant-glow {
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 212, 255, 0.08) 0%,
+    rgba(123, 47, 255, 0.06) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  border-radius: 50%;
+  animation: plant-pulse 4s ease-in-out infinite;
+}
+
+@keyframes plant-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1);    }
+  50%       { opacity: 1;   transform: scale(1.05); }
+}
+
+.plant-scene {
+  width: 100%;
+  max-width: 380px;
+  height: 480px;
+  cursor: crosshair;
+  /* fade-in يتحكم فيه JS */
+}
+
+/* ── Responsive ─── */
+@media (max-width: 1100px) {
+  .hero-two-col {
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+  }
+  .plant-scene { height: 400px; }
+}
+
+@media (max-width: 768px) {
+  .hero-two-col {
+    grid-template-columns: 1fr;
+  }
+  .hero-visual {
+    order: -1;           /* النبتة فوق النص على الموبايل */
+    margin-bottom: -1rem;
+  }
+  .plant-scene {
+    max-width: 260px;
+    height: 300px;
+    margin: 0 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plant-glow { animation: none; }
+}
+
 /* ── Content ─── */
 .hero-content {
   display: flex;

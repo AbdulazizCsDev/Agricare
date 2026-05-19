@@ -1,5 +1,5 @@
 import Navbar from './components/Navbar'
-import Slide01_Title from './slides/Slide01_Title'
+import Hero from './components/Hero'
 import Slide02_Team from './slides/Slide02_Team'
 import Slide03_Problem from './slides/Slide03_Problem'
 import Slide04_Solution from './slides/Slide04_Solution'
@@ -11,9 +11,7 @@ export default function App() {
     <div style={{ background: '#0a1410' }}>
       <Navbar />
 
-      <section id="hero" style={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
-        <Slide01_Title />
-      </section>
+      <Hero />
 
       <section id="team" style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
         <Slide02_Team />
