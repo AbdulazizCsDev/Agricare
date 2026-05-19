@@ -13,6 +13,15 @@ const CAM_STATES = {
   architecture: { x: -0.5, y: 1.4, z: 6.0, lx: -0.5, ly: 1.2, lz: 0 },
 }
 
+/* Fixed Y-rotation target per section — lerped to smoothly, never resets */
+const PLANT_ROT_Y = {
+  hero:          0.00,
+  problem:       0.18,
+  solution:     -0.14,
+  timeline:      0.10,
+  architecture: -0.08,
+}
+
 const FX = {
   hero:         { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.0 },
   problem:      { sick: 1, scan: 0, rimR: 0.85, rimG: 0.25, rimB: 0.05, rimI: 4.0 },
@@ -210,15 +219,14 @@ export default function PlantBackground() {
         sick: makeVal(0),    scan: makeVal(0),
         rimR: makeVal(0.29), rimG: makeVal(0.87), rimB: makeVal(0.5),
         rimI: makeVal(3.0),
-        rotY: makeVal(0),   // section-change rotation impulse
+        rotY: makeVal(0),
       }
 
       /* ── Animate ──────────────────────────────────────────── */
       let raf
-      let time     = 0
-      let scanY    = -0.5
-      let scanDir  = 1
-      let prevSec  = 'hero'
+      let time    = 0
+      let scanY   = -0.5
+      let scanDir = 1
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
@@ -227,12 +235,6 @@ export default function PlantBackground() {
         const sec    = sectionRef.current || 'hero'
         const camTgt = CAM_STATES[sec]
         const fxTgt  = FX[sec]
-
-        // Section change → fire a rotation impulse
-        if (sec !== prevSec) {
-          lv.rotY.v += 0.28
-          prevSec = sec
-        }
 
         const cx  = lv.camX.v = lerp(lv.camX.v, camTgt.x,  0.055)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
@@ -250,8 +252,8 @@ export default function PlantBackground() {
 
         const mx   = lv.mx.v  = lerp(lv.mx.v,   mxRaw, 0.1)
         const my   = lv.my.v  = lerp(lv.my.v,   myRaw, 0.1)
-        // Rotation impulse decays to 0
-        const rotY = lv.rotY.v = lerp(lv.rotY.v, 0, 0.04)
+        // Lerp toward this section's fixed rotation target
+        const rotY = lv.rotY.v = lerp(lv.rotY.v, PLANT_ROT_Y[sec], 0.04)
 
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
