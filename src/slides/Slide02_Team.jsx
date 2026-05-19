@@ -8,19 +8,20 @@ export default function Slide02_Team() {
     <div
       style={{
         width: '100%',
-        height: '100%',
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '60px 60px 80px',
+        padding: '100px 60px 80px',
         gap: 48,
       }}
     >
       {/* Heading */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         transition={{ duration: 0.4 }}
         style={{ textAlign: 'center' }}
       >
@@ -63,7 +64,8 @@ export default function Slide02_Team() {
           <motion.div
             key={member.name}
             initial={{ opacity: 0, y: 32 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ delay: 0.15 + i * 0.12, duration: 0.45, ease: 'easeOut' }}
             whileHover={{
               y: -8,

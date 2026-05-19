@@ -14,10 +14,10 @@ export default function Slide06_Architecture() {
     <div
       style={{
         width: '100%',
-        height: '100%',
+        minHeight: '100vh',
         display: 'flex',
         gap: 40,
-        padding: '52px 52px 88px',
+        padding: '100px 52px 88px',
       }}
     >
       {/* Main content */}
@@ -25,7 +25,9 @@ export default function Slide06_Architecture() {
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -16 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+
+          viewport={{ once: true }}
           transition={{ duration: 0.35 }}
         >
           <p
@@ -59,7 +61,9 @@ export default function Slide06_Architecture() {
         {/* Stack badges */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          whileInView={{ opacity: 1 }}
+
+          viewport={{ once: true }}
           transition={{ delay: 0.9, duration: 0.4 }}
           style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}
         >
@@ -86,7 +90,9 @@ export default function Slide06_Architecture() {
       {/* Right panel: key features */}
       <motion.div
         initial={{ opacity: 0, x: 24 }}
-        animate={{ opacity: 1, x: 0 }}
+        whileInView={{ opacity: 1, x: 0 }}
+
+        viewport={{ once: true }}
         transition={{ delay: 0.4, duration: 0.45 }}
         style={{
           width: 200,
@@ -115,7 +121,9 @@ export default function Slide06_Architecture() {
             <motion.div
               key={f.label}
               initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
+              whileInView={{ opacity: 1, x: 0 }}
+
+              viewport={{ once: true }}
               transition={{ delay: 0.55 + i * 0.1, duration: 0.35 }}
               style={{
                 display: 'flex',
@@ -159,7 +167,9 @@ export default function Slide06_Architecture() {
         {/* Response preview */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          whileInView={{ opacity: 1 }}
+
+          viewport={{ once: true }}
           transition={{ delay: 1.1, duration: 0.4 }}
           style={{
             marginTop: 8,

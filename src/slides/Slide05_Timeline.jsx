@@ -6,17 +6,19 @@ export default function Slide05_Timeline() {
     <div
       style={{
         width: '100%',
-        height: '100%',
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
-        padding: '52px 64px 88px',
+        padding: '100px 64px 88px',
         gap: 36,
       }}
     >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+
+        viewport={{ once: true }}
         transition={{ duration: 0.35 }}
       >
         <p
@@ -49,7 +51,9 @@ export default function Slide05_Timeline() {
       {/* Legend */}
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        whileInView={{ opacity: 1 }}
+
+        viewport={{ once: true }}
         transition={{ delay: 0.8, duration: 0.4 }}
         style={{ display: 'flex', gap: 24, alignItems: 'center' }}
       >

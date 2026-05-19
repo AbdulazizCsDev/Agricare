@@ -14,17 +14,18 @@ export default function Slide03_Problem() {
     <div
       style={{
         width: '100%',
-        height: '100%',
+        minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '56px 64px 80px',
+        padding: '100px 64px 80px',
       }}
     >
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         transition={{ duration: 0.35 }}
       >
         <p
@@ -51,7 +52,8 @@ export default function Slide03_Problem() {
         {/* Left: counter */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.2, duration: 0.5 }}
           style={{
             display: 'flex',
@@ -140,7 +142,8 @@ export default function Slide03_Problem() {
             <motion.div
               key={i}
               initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ delay: 0.3 + i * 0.12, duration: 0.4, ease: 'easeOut' }}
               style={{
                 display: 'flex',
@@ -164,7 +167,8 @@ export default function Slide03_Problem() {
       {/* Bottom impact strip */}
       <motion.div
         initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         transition={{ delay: 0.9, duration: 0.4 }}
         style={{
           padding: '12px 20px',
