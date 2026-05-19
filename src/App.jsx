@@ -12,7 +12,7 @@ export default function App() {
       <PlantBackground />
       <Navbar />
 
-      {/* Hero — very transparent so plant dominates */}
+      {/* Hero — fully transparent: plant is the hero */}
       <section
         id="hero"
         style={{ height: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden' }}
@@ -20,18 +20,24 @@ export default function App() {
         <Slide01_Title />
       </section>
 
-      {/* Problem — semi-transparent, camera zooms to leaves */}
+      {/* Problem — camera zooms to leaves, plant turns sick */}
       <section
         id="problem"
-        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+        style={{
+          minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
+          background: 'linear-gradient(90deg, rgba(10,20,16,0.88) 55%, transparent 100%)',
+        }}
       >
         <Slide03_Problem />
       </section>
 
-      {/* Solution — camera goes to base */}
+      {/* Solution — plant gets scanned */}
       <section
         id="solution"
-        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+        style={{
+          minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
+          background: 'linear-gradient(90deg, rgba(10,20,16,0.88) 55%, transparent 100%)',
+        }}
       >
         <Slide04_Solution />
       </section>
@@ -39,7 +45,10 @@ export default function App() {
       {/* Timeline */}
       <section
         id="timeline"
-        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+        style={{
+          minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
+          background: 'linear-gradient(90deg, rgba(10,20,16,0.88) 65%, transparent 100%)',
+        }}
       >
         <Slide05_Timeline />
       </section>
@@ -47,7 +56,10 @@ export default function App() {
       {/* Architecture */}
       <section
         id="architecture"
-        style={{ minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden', background: 'rgba(10,20,16,0.80)' }}
+        style={{
+          minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden',
+          background: 'linear-gradient(90deg, rgba(10,20,16,0.88) 65%, transparent 100%)',
+        }}
       >
         <Slide06_Architecture />
       </section>

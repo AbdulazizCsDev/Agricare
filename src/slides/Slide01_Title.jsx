@@ -92,10 +92,11 @@ export default function Slide01_Title() {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         position: 'relative',
-        background: 'rgba(10,20,16,0.45)',
+        background: 'linear-gradient(90deg, rgba(10,20,16,0.75) 45%, transparent 85%)',
+        paddingLeft: '6vw',
       }}
     >
       {/* Particle layer */}
@@ -108,11 +109,10 @@ export default function Slide01_Title() {
           zIndex: 10,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           gap: 24,
-          textAlign: 'center',
-          padding: '0 40px',
-          maxWidth: 820,
+          textAlign: 'left',
+          maxWidth: 560,
         }}
       >
         <motion.div
@@ -147,7 +147,7 @@ export default function Slide01_Title() {
             fontSize: '1rem',
             fontStyle: 'italic',
             color: 'rgba(240,253,244,0.65)',
-            maxWidth: 640,
+            maxWidth: 480,
             lineHeight: 1.75,
           }}
         >

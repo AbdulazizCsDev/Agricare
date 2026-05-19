@@ -1,67 +1,59 @@
 import { useEffect, useRef } from 'react'
 
-// Camera + plant state per section
-const STATES = {
-  hero: {
-    camX: 0, camY: 1.4, camZ: 7.0,
-    lookX: 0, lookY: 1.4, lookZ: 0,
-    plantX: 0,   plantRotY: 0,
-  },
-  problem: {
-    // Zoom into the leaves — upper part of the plant
-    camX: 0.6, camY: 2.8, camZ: 2.4,
-    lookX: 0,  lookY: 2.5, lookZ: 0,
-    plantX: 0, plantRotY: 0.25,
-  },
-  solution: {
-    // Pull down to the base / roots area
-    camX: 0.4, camY: -0.2, camZ: 2.6,
-    lookX: 0,  lookY:  0.2, lookZ: 0,
-    plantX: 0, plantRotY: -0.3,
-  },
-  timeline: {
-    camX: -1.8, camY: 1.5, camZ: 5.8,
-    lookX:  0,  lookY: 1.2, lookZ: 0,
-    plantX: -0.4, plantRotY: -0.7,
-  },
-  architecture: {
-    camX: 2.0, camY: 1.6, camZ: 5.2,
-    lookX: 0,  lookY: 1.2, lookZ: 0,
-    plantX: 0.5, plantRotY: 0.8,
-  },
+/* ─── Camera targets per section ─────────────────────────────── */
+const CAM_STATES = {
+  hero:         { x:  0.0, y: 1.5,  z: 7.2, lx: 0, ly: 1.5, lz: 0 },
+  problem:      { x:  0.4, y: 2.9,  z: 2.6, lx: 0, ly: 2.6, lz: 0 },
+  solution:     { x:  0.3, y: 0.0,  z: 2.8, lx: 0, ly: 0.4, lz: 0 },
+  timeline:     { x: -1.6, y: 1.5,  z: 5.8, lx: 0, ly: 1.2, lz: 0 },
+  architecture: { x:  1.8, y: 1.6,  z: 5.2, lx: 0, ly: 1.2, lz: 0 },
 }
 
-const SECTION_IDS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
+/* ─── Effect targets per section ─────────────────────────────── */
+const FX = {
+  hero:         { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.0 },
+  problem:      { sick: 1, scan: 0, rimR: 0.85, rimG: 0.25, rimB: 0.05, rimI: 4.0 },
+  solution:     { sick: 0, scan: 1, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.5 },
+  timeline:     { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
+  architecture: { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
+}
 
-function lerp(a, b, t) { return a + (b - a) * t }
+const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
+
+/* ─── Damped spring for smooth transitions ───────────────────── */
+function makeSpring(val) { return { pos: val, vel: 0 } }
+function stepSpring(s, target, k = 0.055, d = 0.87) {
+  s.vel = s.vel * d + (target - s.pos) * k
+  s.pos += s.vel
+  return s.pos
+}
 
 export default function PlantBackground() {
   const canvasRef  = useRef(null)
-  const sectionRef = useRef('hero') // currently active section
+  const sectionRef = useRef('hero')
 
-  // Track active section via IntersectionObserver
+  /* ── Section tracking ──────────────────────────────────────── */
   useEffect(() => {
-    const observers = []
-    SECTION_IDS.forEach((id) => {
+    const obs = []
+    SECTIONS.forEach((id) => {
       const el = document.getElementById(id)
       if (!el) return
-      const obs = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) sectionRef.current = id
-        },
-        { threshold: 0.35 }
+      const o = new IntersectionObserver(
+        ([e]) => { if (e.isIntersecting) sectionRef.current = id },
+        { threshold: 0.3 }
       )
-      obs.observe(el)
-      observers.push(obs)
+      o.observe(el)
+      obs.push(o)
     })
-    return () => observers.forEach((o) => o.disconnect())
+    return () => obs.forEach((o) => o.disconnect())
   }, [])
 
+  /* ── Three.js scene ────────────────────────────────────────── */
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     let cancelled = false
-    let cleanup = () => {}
+    let cleanupFn = () => {}
 
     Promise.all([
       import('three'),
@@ -69,51 +61,86 @@ export default function PlantBackground() {
       import('three/examples/jsm/loaders/DRACOLoader.js'),
     ]).then(([THREE, { GLTFLoader }, { DRACOLoader }]) => {
       if (cancelled) return
-
       const canvas = canvasRef.current
       if (!canvas) return
 
-      // ── Renderer ─────────────────────────────────────────────
+      /* ── Renderer ─────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
       renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
       renderer.setClearColor(0x000000, 0)
       renderer.shadowMap.enabled = true
       renderer.shadowMap.type    = THREE.PCFSoftShadowMap
       renderer.toneMapping       = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure = 1.4
+      renderer.toneMappingExposure = 1.5
 
-      // ── Camera ───────────────────────────────────────────────
-      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
-
-      const setSize = () => {
-        const w = window.innerWidth, h = window.innerHeight
-        renderer.setSize(w, h)
-        camera.aspect = w / h
+      /* ── Camera ───────────────────────────────────────────── */
+      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
+      const resize = () => {
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
       }
-      setSize()
-      window.addEventListener('resize', setSize)
+      resize()
+      window.addEventListener('resize', resize)
 
-      // ── Scene ────────────────────────────────────────────────
+      /* ── Scene ────────────────────────────────────────────── */
       const scene = new THREE.Scene()
 
-      scene.add(new THREE.AmbientLight(0x4ade80, 0.5))
+      const ambient = new THREE.AmbientLight(0x4ade80, 0.55)
+      scene.add(ambient)
 
-      const key = new THREE.DirectionalLight(0xffffff, 3.0)
-      key.position.set(3, 7, 4)
+      const key = new THREE.DirectionalLight(0xffffff, 3.2)
+      key.position.set(3, 8, 5)
       key.castShadow = true
       key.shadow.mapSize.setScalar(1024)
       scene.add(key)
 
-      const rim = new THREE.PointLight(0x4ade80, 3.0, 20)
+      const rim = new THREE.PointLight(0x4ade80, 3.0, 22)
       rim.position.set(-3, 4, -4)
       scene.add(rim)
 
-      const fill = new THREE.PointLight(0x60a5fa, 1.0, 16)
+      const fill = new THREE.PointLight(0x60a5fa, 0.9, 16)
       fill.position.set(4, 2, 2)
       scene.add(fill)
 
-      // ── Load model ───────────────────────────────────────────
+      /* ── Disease light (problem section) ─────────────────── */
+      const diseaseLight = new THREE.PointLight(0xff6a00, 0, 5)
+      diseaseLight.position.set(0.3, 1.5, 0.5)
+      scene.add(diseaseLight)
+
+      /* ── Scan plane (solution section) ───────────────────── */
+      const scanMat = new THREE.MeshBasicMaterial({
+        color: 0x4ade80,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      })
+      const scanPlane = new THREE.Mesh(
+        new THREE.BoxGeometry(4.0, 0.018, 4.0),
+        scanMat
+      )
+      scene.add(scanPlane)
+
+      // Glow volume below the scan plane
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: 0x4ade80,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      })
+      const glowVolume = new THREE.Mesh(
+        new THREE.BoxGeometry(3.6, 0.4, 3.6),
+        glowMat
+      )
+      scene.add(glowVolume)
+
+      // Scan point light that follows the plane
+      const scanLight = new THREE.PointLight(0x4ade80, 0, 6)
+      scene.add(scanLight)
+
+      /* ── Model ────────────────────────────────────────────── */
       const draco = new DRACOLoader()
       draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
 
@@ -123,25 +150,33 @@ export default function PlantBackground() {
       const group = new THREE.Group()
       scene.add(group)
       let modelReady = false
+      const meshData = [] // { mesh, origColor: THREE.Color }
 
       loader.load('/plant/scene.gltf', (gltf) => {
         if (cancelled) return
-
         const model = gltf.scene
         const box    = new THREE.Box3().setFromObject(model)
         const size   = box.getSize(new THREE.Vector3())
         const center = box.getCenter(new THREE.Vector3())
-        const scale  = 3.6 / Math.max(size.x, size.y, size.z)
+        const scale  = 3.8 / Math.max(size.x, size.y, size.z)
 
         model.scale.setScalar(scale)
         model.position.sub(center.multiplyScalar(scale))
-        model.position.y -= 0.2
+        model.position.y -= 0.15
 
         model.traverse((child) => {
-          if (child.isMesh) {
-            child.castShadow    = true
-            child.receiveShadow = true
-            if (child.material) child.material.envMapIntensity = 1.0
+          if (!child.isMesh) return
+          child.castShadow = child.receiveShadow = true
+          if (child.material) {
+            // Clone material so we can tint per-mesh
+            child.material = child.material.clone()
+            child.material.envMapIntensity = 1.0
+            meshData.push({
+              mesh: child,
+              origR: child.material.color.r,
+              origG: child.material.color.g,
+              origB: child.material.color.b,
+            })
           }
         })
 
@@ -149,85 +184,127 @@ export default function PlantBackground() {
         modelReady = true
       })
 
-      // ── Mouse parallax ───────────────────────────────────────
-      let mouseX = 0, mouseY = 0
+      /* ── Mouse ────────────────────────────────────────────── */
+      let mxRaw = 0, myRaw = 0
       const onMouse = (e) => {
-        mouseX = (e.clientX / window.innerWidth  - 0.5)
-        mouseY = (e.clientY / window.innerHeight - 0.5)
+        mxRaw = e.clientX / window.innerWidth  - 0.5
+        myRaw = e.clientY / window.innerHeight - 0.5
       }
       window.addEventListener('mousemove', onMouse, { passive: true })
 
-      // ── Lerped state ─────────────────────────────────────────
-      const cur = {
-        camX: 0, camY: 1.4, camZ: 7.0,
-        lookX: 0, lookY: 1.4, lookZ: 0,
-        plantX: 0, plantRotY: 0,
+      /* ── Springs (one per interpolated value) ────────────── */
+      const sp = {
+        camX: makeSpring(0),   camY: makeSpring(1.5),  camZ: makeSpring(7.2),
+        lkX:  makeSpring(0),   lkY:  makeSpring(1.5),  lkZ:  makeSpring(0),
+        pRotY: makeSpring(0),
+        mx:   makeSpring(0),   my:   makeSpring(0),
+        sick: makeSpring(0),   scan: makeSpring(0),
+        rimR: makeSpring(0.29), rimG: makeSpring(0.87), rimB: makeSpring(0.5),
+        rimI: makeSpring(3.0),
       }
 
-      // ── Animate ──────────────────────────────────────────────
+      /* ── Animate ──────────────────────────────────────────── */
       let raf
-      let time = 0
-      const speed = 0.04 // lerp speed
+      let time    = 0
+      let scanY   = -0.5   // scan line Y position
+      let scanDir = 1      // +1 = going up, -1 = going down
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
-        time += 0.008
+        time += 0.01
 
-        const target = STATES[sectionRef.current] || STATES.hero
+        const sec    = sectionRef.current || 'hero'
+        const camTgt = CAM_STATES[sec]
+        const fxTgt  = FX[sec]
 
-        // Smooth lerp all values
-        cur.camX     = lerp(cur.camX,     target.camX,     speed)
-        cur.camY     = lerp(cur.camY,     target.camY,     speed)
-        cur.camZ     = lerp(cur.camZ,     target.camZ,     speed)
-        cur.lookX    = lerp(cur.lookX,    target.lookX,    speed)
-        cur.lookY    = lerp(cur.lookY,    target.lookY,    speed)
-        cur.lookZ    = lerp(cur.lookZ,    target.lookZ,    speed)
-        cur.plantX   = lerp(cur.plantX,   target.plantX,   speed)
-        cur.plantRotY = lerp(cur.plantRotY, target.plantRotY, speed)
+        // ── Spring-step every value ──────────────────────────
+        const cx  = stepSpring(sp.camX,  camTgt.x,  0.055, 0.87)
+        const cy  = stepSpring(sp.camY,  camTgt.y,  0.055, 0.87)
+        const cz  = stepSpring(sp.camZ,  camTgt.z,  0.055, 0.87)
+        const lkx = stepSpring(sp.lkX,   camTgt.lx, 0.055, 0.87)
+        const lky = stepSpring(sp.lkY,   camTgt.ly, 0.055, 0.87)
+        const lkz = stepSpring(sp.lkZ,   camTgt.lz, 0.055, 0.87)
 
-        // Camera with mouse parallax
-        camera.position.set(
-          cur.camX + mouseX * 0.25,
-          cur.camY - mouseY * 0.15,
-          cur.camZ
-        )
-        camera.lookAt(cur.lookX, cur.lookY, cur.lookZ)
+        const sick = stepSpring(sp.sick, fxTgt.sick, 0.03, 0.9)
+        const scan = stepSpring(sp.scan, fxTgt.scan, 0.04, 0.88)
+        const rR   = stepSpring(sp.rimR, fxTgt.rimR, 0.04, 0.9)
+        const rG   = stepSpring(sp.rimG, fxTgt.rimG, 0.04, 0.9)
+        const rB   = stepSpring(sp.rimB, fxTgt.rimB, 0.04, 0.9)
+        const rI   = stepSpring(sp.rimI, fxTgt.rimI, 0.04, 0.9)
+
+        const mx = stepSpring(sp.mx, mxRaw, 0.08, 0.82)
+        const my = stepSpring(sp.my, myRaw, 0.08, 0.82)
+
+        // ── Camera ───────────────────────────────────────────
+        camera.position.set(cx + mx * 0.22, cy - my * 0.14, cz)
+        camera.lookAt(lkx, lky, lkz)
+
+        // ── Rim light (color + intensity spring) ─────────────
+        rim.color.setRGB(rR, rG, rB)
+        rim.intensity = rI + Math.sin(time * 0.55) * 0.4
+        rim.position.x = -3 + Math.sin(time * 0.42) * 0.6
+
+        // ── Disease light ─────────────────────────────────────
+        const flicker = sick * (1.8 + Math.sin(time * 9.5) * 0.7 + Math.sin(time * 17) * 0.3)
+        diseaseLight.intensity = flicker
+        diseaseLight.position.y = 1.5 + Math.sin(time * 3.2) * 0.3
 
         if (modelReady) {
-          // Plant position
-          group.position.x = cur.plantX
+          // ── Plant sway ─────────────────────────────────────
+          const wilt = sick * 0.06 // wilt sideways when sick
+          group.rotation.y = Math.sin(time * 0.32) * 0.025 + mx * 0.055
+          group.rotation.x = -my * 0.07  + Math.sin(time * 0.26) * 0.012
+          group.rotation.z = wilt + Math.sin(time * 0.18) * (0.01 + sick * 0.02)
 
-          // Scroll-driven rotation + gentle sway
-          group.rotation.y = cur.plantRotY + Math.sin(time * 0.35) * 0.03 + mouseX * 0.06
-          group.rotation.x = -mouseY * 0.08 + Math.sin(time * 0.28) * 0.015
-          group.rotation.z =  Math.sin(time * 0.22) * 0.012
-
-          // Breathing
-          const breathe = 1 + Math.sin(time * 0.75) * 0.007
+          // Breathing scale (reduced when sick, stronger during scan)
+          const breathe = 1 + Math.sin(time * 0.72) * (0.006 + scan * 0.004)
           group.scale.setScalar(breathe)
+
+          // ── Material tint (sick = yellowish-brown) ─────────
+          meshData.forEach(({ mesh, origR, origG, origB }) => {
+            const m = mesh.material
+            // sick target: R stays, G×0.6, B×0.08
+            m.color.r = origR + (origR * 0.1) * sick
+            m.color.g = origG * (1 - sick * 0.45)
+            m.color.b = origB * (1 - sick * 0.85)
+          })
         }
 
-        // Lights animate
-        rim.position.x = -3 + Math.sin(time * 0.45) * 0.7
-        rim.intensity   = 3.0 + Math.sin(time * 0.6) * 0.5
+        // ── Scan plane ───────────────────────────────────────
+        if (scan > 0.01) {
+          scanY += scanDir * 0.022
+          if (scanY >  3.8) { scanY =  3.8; scanDir = -1 }
+          if (scanY < -0.5) { scanY = -0.5; scanDir =  1 }
+
+          const opBase = scan * 0.75
+          scanPlane.position.set(0, scanY, 0)
+          scanMat.opacity = opBase + Math.sin(time * 4) * 0.15 * scan
+
+          glowVolume.position.set(0, scanY - 0.22 * scanDir, 0)
+          glowMat.opacity = opBase * 0.18
+
+          scanLight.position.set(0, scanY, 0)
+          scanLight.intensity = scan * (2.0 + Math.sin(time * 4) * 0.5)
+        } else {
+          scanMat.opacity  = 0
+          glowMat.opacity  = 0
+          scanLight.intensity = 0
+        }
 
         renderer.render(scene, camera)
       }
       animate()
 
-      cleanup = () => {
+      cleanupFn = () => {
         cancelAnimationFrame(raf)
         window.removeEventListener('mousemove', onMouse)
-        window.removeEventListener('resize',    setSize)
+        window.removeEventListener('resize', resize)
         renderer.dispose()
         draco.dispose()
       }
     })
 
-    return () => {
-      cancelled = true
-      cleanup()
-    }
+    return () => { cancelled = true; cleanupFn() }
   }, [])
 
   return (
