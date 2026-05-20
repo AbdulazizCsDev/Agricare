@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const STAGES = [
   {
@@ -19,68 +20,112 @@ const STAGES = [
 ]
 
 export default function Slide05_Timeline() {
-  return (
-    <div style={{ width: '100%', position: 'relative' }}>
+  const [activeIdx, setActiveIdx] = useState(0)
 
-      {/* ── Sticky header ───────────────────────────────────────── */}
+  useEffect(() => {
+    const observers = STAGES.map((stage, idx) => {
+      const el = document.getElementById(`timeline-s${stage.num}`)
+      if (!el) return null
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveIdx(idx) },
+        { threshold: 0.5 }
+      )
+      obs.observe(el)
+      return obs
+    })
+    return () => observers.forEach(o => o?.disconnect())
+  }, [])
+
+  const stage   = STAGES[activeIdx]
+  const isActive = stage.status === 'active'
+
+  return (
+    /* ── Outer: 500vh scroll container ─────────────────────────── */
+    <div style={{ height: `${STAGES.length * 100}vh`, position: 'relative' }}>
+
+      {/* ── Invisible panels — only exist for scroll & IntersectionObserver */}
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        {STAGES.map(s => (
+          <div key={s.num} id={`timeline-s${s.num}`} style={{ height: '100vh' }} />
+        ))}
+      </div>
+
+      {/* ── Sticky viewport — stays on screen while user scrolls 500vh ── */}
       <div style={{
         position: 'sticky',
         top: 0,
-        zIndex: 20,
-        padding: '28px 48px 20px',
-        pointerEvents: 'none',
-        background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%)',
+        height: '100vh',
+        overflow: 'hidden',
+        zIndex: 10,
       }}>
-        <p style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: '0.66rem',
-          color: 'rgba(74,222,128,0.55)',
-          letterSpacing: '0.14em',
-          marginBottom: 6,
-        }}>
-          PROJECT TIMELINE
-        </p>
-        <h2 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
-          5 Stages —{' '}
-          <span style={{ color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.4)' }}>
-            Stage 1
-          </span>
-          {' '}Active
-        </h2>
-      </div>
 
-      {/* ── One 100vh panel per stage ───────────────────────────── */}
-      {STAGES.map((stage, idx) => {
-        const isActive = stage.status === 'active'
-        return (
-          <div
-            key={stage.num}
-            id={`timeline-s${stage.num}`}
-            style={{
-              minHeight: '100vh',
-              display: 'flex',
-              alignItems: 'center',
-              position: 'relative',
-            }}
-          >
-            <motion.div
-              initial={{ opacity: 0, x: -28 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: false, amount: 0.4 }}
-              transition={{ duration: 0.5, ease: 'easeOut' }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-              }}
-            >
-              {/* ── Card — occupies left 44% ─────────────────── */}
-              <div style={{
-                width: '44%',
-                display: 'flex',
-                justifyContent: 'flex-end',
-                paddingRight: 12,
-              }}>
+        {/* Header */}
+        <div style={{ position: 'absolute', top: 28, left: 48, zIndex: 2 }}>
+          <p style={{
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '0.66rem',
+            color: 'rgba(74,222,128,0.55)',
+            letterSpacing: '0.14em',
+            marginBottom: 6,
+          }}>
+            PROJECT TIMELINE
+          </p>
+          <h2 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
+            5 Stages —{' '}
+            <span style={{ color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.4)' }}>
+              Stage 1
+            </span>
+            {' '}Active
+          </h2>
+        </div>
+
+        {/* Stage progress dots — right side */}
+        <div style={{
+          position: 'absolute',
+          right: 48,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 12,
+          zIndex: 2,
+        }}>
+          {STAGES.map((s, i) => (
+            <div key={i} style={{
+              width:  i === activeIdx ? 6 : 4,
+              height: i === activeIdx ? 6 : 4,
+              borderRadius: '50%',
+              background: i === activeIdx
+                ? '#4ade80'
+                : 'rgba(74,222,128,0.22)',
+              boxShadow: i === activeIdx ? '0 0 8px rgba(74,222,128,0.6)' : 'none',
+              transition: 'all 0.35s ease',
+            }} />
+          ))}
+        </div>
+
+        {/* ── Card + Node — permanently centered ─────────────────── */}
+        <div style={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+
+          {/* Card — left 44%, content animates on stage change */}
+          <div style={{
+            width: '44%',
+            display: 'flex',
+            justifyContent: 'flex-end',
+            paddingRight: 12,
+          }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeIdx}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -14 }}
+                transition={{ duration: 0.32, ease: 'easeOut' }}
+              >
                 <div style={{
                   padding: isActive ? '14px 16px' : '10px 14px',
                   borderRadius: 12,
@@ -132,16 +177,16 @@ export default function Slide05_Timeline() {
                       {`S${stage.num}`}
                     </span>
                     <span style={{
-                      fontSize: isActive ? '0.88rem' : '0.78rem',
-                      fontWeight: isActive ? 700 : 500,
-                      color: isActive ? '#f0fdf4' : 'rgba(240,253,244,0.58)',
+                      fontSize: isActive ? '0.88rem' : '0.8rem',
+                      fontWeight: isActive ? 700 : 600,
+                      color: isActive ? '#f0fdf4' : 'rgba(240,253,244,0.62)',
                       lineHeight: 1.3,
                     }}>
                       {stage.label}
                     </span>
                   </div>
 
-                  {/* Tasks — active stage only */}
+                  {/* Tasks */}
                   {isActive && stage.tasks?.map((t, ti) => (
                     <div key={ti} style={{
                       display: 'flex',
@@ -176,50 +221,63 @@ export default function Slide05_Timeline() {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              {/* ── Connector + Node at 50% (plant trunk center) ── */}
-              <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                <div style={{
-                  width: 28, height: 1,
-                  background: isActive
-                    ? 'rgba(74,222,128,0.45)'
-                    : 'rgba(74,222,128,0.12)',
-                }} />
-                <motion.div
-                  animate={isActive ? {
-                    boxShadow: [
-                      '0 0 0 0px rgba(74,222,128,0.5)',
-                      '0 0 0 10px rgba(74,222,128,0)',
-                    ],
-                  } : {}}
-                  transition={{ duration: 1.8, repeat: Infinity }}
-                  style={{
-                    width:  isActive ? 18 : 9,
-                    height: isActive ? 18 : 9,
-                    borderRadius: '50%',
-                    background: isActive ? '#4ade80' : 'rgba(74,222,128,0.08)',
-                    border: `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.35)'}`,
-                    boxShadow: isActive ? '0 0 14px rgba(74,222,128,0.7)' : '0 0 6px rgba(74,222,128,0.15)',
-                    flexShrink: 0,
-                  }}
-                />
-              </div>
-
-              {/* ── Stage number — right of node (faint) ────────── */}
-              <div style={{
-                marginLeft: 14,
-                fontFamily: 'JetBrains Mono, monospace',
-                fontSize: '0.6rem',
-                color: isActive ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.1)',
-                userSelect: 'none',
-              }}>
-                {`0${stage.num}`}
-              </div>
-            </motion.div>
+              </motion.div>
+            </AnimatePresence>
           </div>
-        )
-      })}
+
+          {/* Connector line + Node — always centered on screen */}
+          <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+            <motion.div
+              animate={{ width: isActive ? 32 : 24 }}
+              transition={{ duration: 0.35 }}
+              style={{
+                height: 1,
+                background: isActive
+                  ? 'rgba(74,222,128,0.45)'
+                  : 'rgba(74,222,128,0.18)',
+              }}
+            />
+            <motion.div
+              layout
+              animate={isActive ? {
+                boxShadow: [
+                  '0 0 0 0px rgba(74,222,128,0.5)',
+                  '0 0 0 10px rgba(74,222,128,0)',
+                ],
+              } : {}}
+              transition={{ duration: 1.8, repeat: Infinity }}
+              style={{
+                width:  isActive ? 18 : 10,
+                height: isActive ? 18 : 10,
+                borderRadius: '50%',
+                background: isActive
+                  ? '#4ade80'
+                  : 'rgba(74,222,128,0.12)',
+                border: `2px solid ${isActive
+                  ? '#4ade80'
+                  : 'rgba(74,222,128,0.38)'}`,
+                boxShadow: isActive
+                  ? '0 0 14px rgba(74,222,128,0.7)'
+                  : '0 0 5px rgba(74,222,128,0.18)',
+                flexShrink: 0,
+                transition: 'width 0.35s, height 0.35s, background 0.35s',
+              }}
+            />
+          </div>
+
+          {/* Stage number — right of node */}
+          <div style={{
+            marginLeft: 14,
+            fontFamily: 'JetBrains Mono, monospace',
+            fontSize: '0.6rem',
+            color: isActive ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.12)',
+            transition: 'color 0.35s',
+            userSelect: 'none',
+          }}>
+            {`0${stage.num}`}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

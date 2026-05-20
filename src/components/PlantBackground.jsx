@@ -62,7 +62,7 @@ export default function PlantBackground() {
       if (!el) return
       const o = new IntersectionObserver(
         ([e]) => { if (e.isIntersecting) sectionRef.current = id },
-        { threshold: 0.4 }
+        { threshold: 0.5 }
       )
       o.observe(el)
       obs.push(o)
