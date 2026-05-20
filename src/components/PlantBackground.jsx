@@ -280,8 +280,10 @@ export default function PlantBackground() {
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
-        /* Fade canvas out in architecture — RootCanvas takes over */
-        const canOp = lv.canOp.v = lerp(lv.canOp.v, isArch ? 0 : 1, 0.038)
+        /* Fade out fast when entering arch, fade in slow when leaving */
+        const canOpTarget = isArch ? 0 : 1
+        const canOpSpeed  = isArch ? 0.045 : 0.018
+        const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
         canvas.style.opacity = canOp
 
         rim.color.setRGB(rR, rG, rB)
