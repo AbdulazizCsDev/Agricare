@@ -2,13 +2,13 @@ import { motion } from 'framer-motion'
 
 /* All cards on the LEFT — spine runs along the tree trunk at ~50% */
 const STAGES = [
-  { num: 3, label: 'Deployment',     status: 'upcoming', topPct: 24 },
-  { num: 2, label: 'Model Training', status: 'upcoming', topPct: 50 },
+  { num: 3, label: 'Deployment',     status: 'upcoming', topPct: 22 },
+  { num: 2, label: 'Model Training', status: 'upcoming', topPct: 44 },
   {
     num: 1,
     label: 'Data Collection, Cleaning & Augmentation',
     status: 'active',
-    topPct: 75,
+    topPct: 62,
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
       { member: 'Abdulaziz',  task: 'Deduplication + blur detection'         },
@@ -151,9 +151,9 @@ export default function Slide05_Timeline() {
                 top:        `${stage.topPct}%`,
                 left:       0,
                 right:      0,
-                transform:  'translateY(-50%)',
+                transform:  isActive ? 'translateY(-12px)' : 'translateY(-50%)',
                 display:    'flex',
-                alignItems: 'center',
+                alignItems: isActive ? 'flex-start' : 'center',
               }}
             >
               {/* Card on left */}
@@ -167,10 +167,10 @@ export default function Slide05_Timeline() {
               </div>
 
               {/* Connector: card → node */}
-              <Connector isActive={isActive} />
+              <Connector isActive={isActive} offset={isActive ? 11 : 0} />
 
               {/* Node on spine */}
-              <NodeDot isActive={isActive} />
+              <NodeDot isActive={isActive} offset={isActive ? 11 : 0} />
             </motion.div>
           )
         })}
@@ -181,7 +181,7 @@ export default function Slide05_Timeline() {
 
 /* ── Sub-components ────────────────────────────────────────── */
 
-function NodeDot({ isActive }) {
+function NodeDot({ isActive, offset }) {
   return (
     <motion.div
       animate={isActive ? {
@@ -191,6 +191,7 @@ function NodeDot({ isActive }) {
       style={{
         width:        isActive ? 24 : 14,
         height:       isActive ? 24 : 14,
+        marginTop:    offset,
         borderRadius: '50%',
         background:   isActive ? '#4ade80' : 'rgba(74,222,128,.18)',
         border:       `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,.6)'}`,
@@ -201,7 +202,7 @@ function NodeDot({ isActive }) {
   )
 }
 
-function Connector({ isActive }) {
+function Connector({ isActive, offset }) {
   return (
     <motion.div
       initial={{ scaleX: 0 }}
@@ -211,6 +212,7 @@ function Connector({ isActive }) {
       style={{
         width:           36,
         height:          isActive ? 2 : 1.5,
+        marginTop:       offset,
         flexShrink:      0,
         transformOrigin: 'right',
         background:      isActive
