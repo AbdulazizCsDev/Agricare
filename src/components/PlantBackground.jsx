@@ -282,8 +282,8 @@ export default function PlantBackground() {
         const cxTarget  = (isTimeline || isRootView) ? plantX : camTgt.x
         const lkxTarget = (isTimeline || isRootView) ? plantX : camTgt.lx
 
-        /* Entry: 0.038 / Exit: 0.030 (20% slower return) */
-        const lT  = isRootView ? 0.038 : 0.030
+        /* Smoother entries: slower lerp into root view */
+        const lT  = isRootView ? 0.020 : 0.030
         const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  lT)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  lT)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  lT)
@@ -310,7 +310,7 @@ export default function PlantBackground() {
         const ARCH_EXIT_DELAY = 1.08
         const exitElapsed = exitMs ? (performance.now() - exitMs) / 1000 : 0
         const canOpTarget = isRootView ? 0 : (!exitMs || exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
-        const canOpSpeed  = isRootView ? 0.045 : 0.008
+        const canOpSpeed  = isRootView ? 0.022 : 0.008
         const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
         canvas.style.opacity = canOp
 

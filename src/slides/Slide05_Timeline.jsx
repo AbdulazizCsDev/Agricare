@@ -39,26 +39,38 @@ const SPINE_BOTTOM = STAGES[2].topPct   // 52%
 const SPINE_H      = SPINE_BOTTOM - SPINE_TOP  // 40%
 
 export default function Slide05_Timeline() {
-  /* Increment every time the #timeline section enters the viewport */
-  const [animKey, setAnimKey] = useState(0)
+  /* Increment every time the #timeline section enters the viewport;
+     also track presence so we can fade everything out when leaving */
+  const [animKey, setAnimKey]   = useState(0)
+  const [isVisible, setVisible] = useState(false)
 
   useEffect(() => {
     const section = document.getElementById('timeline')
     if (!section) return
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setAnimKey(k => k + 1) },
-      { threshold: 0.5 }
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          setAnimKey(k => k + 1)
+        } else {
+          setVisible(false)
+        }
+      },
+      { threshold: 0.4 }
     )
     obs.observe(section)
     return () => obs.disconnect()
   }, [])
 
   return (
-    <div style={{
-      width: '100%', height: '100vh',
-      boxSizing: 'border-box',
-      position: 'relative', overflow: 'hidden',
-    }}>
+    <motion.div
+      animate={{ opacity: isVisible ? 1 : 0 }}
+      transition={{ duration: 0.9, ease: 'easeInOut' }}
+      style={{
+        width: '100%', height: '100vh',
+        boxSizing: 'border-box',
+        position: 'relative', overflow: 'hidden',
+      }}>
 
       {/* Left dark overlay */}
       <div style={{
@@ -221,7 +233,7 @@ export default function Slide05_Timeline() {
           </div>
         )
       })}
-    </div>
+    </motion.div>
   )
 }
 

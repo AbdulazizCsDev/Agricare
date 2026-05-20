@@ -13,8 +13,8 @@ const FEATURES = [
 const TECH = ['PyTorch', 'EfficientNet-B0', 'FastAPI', 'Docker', 'Uvicorn', 'torchvision']
 
 /* Timing (seconds) ─────────────────────────────────────────── */
-const SETTLE = 1.6   // wait for camera transition to settle
-const STEP   = 0.45  // gap between each block
+const SETTLE = 2.6   // wait for camera transition (slow root zoom) to settle
+const STEP   = 0.75  // slow, deliberate gap between each block
 
 const glass = {
   background:           'rgba(0,0,0,0.55)',
@@ -25,33 +25,44 @@ const glass = {
 }
 
 export default function Slide06_Architecture() {
-  /* Replay sequence each time the section enters the viewport */
-  const [animKey, setAnimKey] = useState(0)
+  /* Replay sequence each time the section enters; also fade out on exit */
+  const [animKey, setAnimKey]   = useState(0)
+  const [isVisible, setVisible] = useState(false)
 
   useEffect(() => {
     const section = document.getElementById('architecture')
     if (!section) return
     const obs = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setAnimKey(k => k + 1) },
-      { threshold: 0.5 }
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          setAnimKey(k => k + 1)
+        } else {
+          setVisible(false)
+        }
+      },
+      { threshold: 0.4 }
     )
     obs.observe(section)
     return () => obs.disconnect()
   }, [])
 
   return (
-    <div style={{
-      width: '100%', minHeight: '100vh',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: '80px 48px', position: 'relative',
-    }}>
+    <motion.div
+      animate={{ opacity: isVisible ? 1 : 0 }}
+      transition={{ duration: 1.0, ease: 'easeInOut' }}
+      style={{
+        width: '100%', minHeight: '100vh',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '80px 48px', position: 'relative',
+      }}>
 
       {/* Card frame appears right away (still empty inside until SETTLE) */}
       <motion.div
         key={`card-${animKey}`}
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: SETTLE - 0.4 }}
+        transition={{ duration: 0.9, delay: SETTLE - 0.5, ease: 'easeOut' }}
         style={{
           ...glass,
           width: '100%', maxWidth: 1100,
@@ -65,7 +76,7 @@ export default function Slide06_Architecture() {
           key={`hdr-${animKey}`}
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: SETTLE }}
+          transition={{ duration: 0.75, delay: SETTLE, ease: 'easeOut' }}
         >
           <p style={{
             fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem',
@@ -90,7 +101,7 @@ export default function Slide06_Architecture() {
           key={`diag-${animKey}`}
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: SETTLE + STEP }}
+          transition={{ duration: 0.85, delay: SETTLE + STEP, ease: 'easeOut' }}
         >
           <ArchitectureDiagram />
         </motion.div>
@@ -108,7 +119,7 @@ export default function Slide06_Architecture() {
               key={tech}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: SETTLE + STEP * 2 + i * 0.06, duration: 0.3 }}
+              transition={{ delay: SETTLE + STEP * 2 + i * 0.1, duration: 0.5, ease: 'easeOut' }}
               style={{
                 fontSize: '0.82rem', fontWeight: 600,
                 fontFamily: 'JetBrains Mono, monospace',
@@ -132,7 +143,7 @@ export default function Slide06_Architecture() {
                 key={`${f.label}-${animKey}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: SETTLE + STEP * 3 + i * 0.08, duration: 0.35 }}
+                transition={{ delay: SETTLE + STEP * 3 + i * 0.12, duration: 0.55, ease: 'easeOut' }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 9,
                   padding: '10px 18px', borderRadius: 100,
@@ -151,6 +162,6 @@ export default function Slide06_Architecture() {
         </div>
 
       </motion.div>
-    </div>
+    </motion.div>
   )
 }
