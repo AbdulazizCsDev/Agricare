@@ -257,8 +257,10 @@ export default function PlantBackground() {
         const sec = sectionRef.current || 'hero'
         const fxTgt = FX[sec]
 
-        /* Detect the exact moment we leave architecture */
-        if (prevSecRef.current === 'architecture' && sec !== 'architecture') {
+        /* Detect the exact moment we leave architecture (set once, clear on re-entry) */
+        if (isArch) {
+          archExitMsRef.current = null
+        } else if (prevSecRef.current === 'architecture' && !archExitMsRef.current) {
           archExitMsRef.current = performance.now()
         }
         prevSecRef.current = sec
@@ -361,8 +363,7 @@ export default function PlantBackground() {
           scanLight.intensity = 0
         }
 
-        /* Skip render when fully faded out (architecture section) */
-        if (canOp > 0.01) renderer.render(scene, camera)
+        renderer.render(scene, camera)
       }
       animate()
 
