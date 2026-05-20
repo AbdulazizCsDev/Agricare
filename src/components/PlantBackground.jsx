@@ -12,8 +12,8 @@ const CAM_STATES = {
   solution:     { x: -0.5, y: 0.6,  z:  7.0, lx: -0.5, ly: 0.6,  lz: 0 },
   /* Full-plant view: plant center ≈ y -0.4, z=11 shows entire height slightly larger */
   timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
-  /* Zoom deep into plant roots — camera descends and gets very close */
-  architecture: { x:  0.0, y: -2.6, z:  3.5, lx:  0.0, ly: -3.4, lz: 0 },
+  /* Zoom deep below the plant — fast dive into underground */
+  architecture: { x:  0.0, y: -5.5, z:  2.2, lx:  0.0, ly: -6.5, lz: 0 },
 }
 
 /* Fixed Y-rotation target per section */
@@ -256,12 +256,14 @@ export default function PlantBackground() {
         const isArch     = sec === 'architecture'
         const cxTarget  = (isTimeline || isArch) ? plantX : camTgt.x
         const lkxTarget = (isTimeline || isArch) ? plantX : camTgt.lx
-        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  0.055)
-        const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
-        const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  0.055)
-        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget, 0.055)
-        const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly, 0.055)
-        const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz, 0.055)
+        /* Faster lerp when diving into architecture */
+        const lT  = isArch ? 0.09 : 0.055
+        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  lT)
+        const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  lT)
+        const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  lT)
+        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget, lT)
+        const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly, lT)
+        const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz, lT)
 
         const sick = lv.sick.v = lerp(lv.sick.v, fxTgt.sick, 0.035)
         const scan = lv.scan.v = lerp(lv.scan.v, fxTgt.scan, 0.035)

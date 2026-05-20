@@ -19,8 +19,8 @@ export default function Slide06_Architecture() {
         flexDirection: 'column',
         gap: 32,
         padding: '100px 52px 88px',
-        maxWidth: '58vw',
-        background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)',
+        maxWidth: '64vw',
+        background: 'linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.82) 55%, rgba(0,0,0,0.45) 80%, transparent 100%)',
         position: 'relative',
       }}
     >
