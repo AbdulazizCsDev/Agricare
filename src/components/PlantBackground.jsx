@@ -254,8 +254,10 @@ export default function PlantBackground() {
         raf = requestAnimationFrame(animate)
         time += 0.01
 
-        const sec = sectionRef.current || 'hero'
-        const fxTgt = FX[sec]
+        const sec        = sectionRef.current || 'hero'
+        const fxTgt      = FX[sec]
+        const isArch     = sec === 'architecture'
+        const isTimeline = sec === 'timeline'
 
         /* Detect the exact moment we leave architecture (set once, clear on re-entry) */
         if (isArch) {
@@ -264,9 +266,6 @@ export default function PlantBackground() {
           archExitMsRef.current = performance.now()
         }
         prevSecRef.current = sec
-
-        const isArch     = sec === 'architecture'
-        const isTimeline = sec === 'timeline'
 
         /* During reverse transition: hold arch camera so zoom-out is visible */
         const HOLD_MS = 1500   /* ms to keep arch zoom while plant fades in */
