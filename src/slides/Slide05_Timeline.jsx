@@ -1,13 +1,13 @@
 import { motion } from 'framer-motion'
 
 const STAGES = [
-  { num: 3, label: 'Deployment',     status: 'upcoming', topPct: 22, side: 'right' },
-  { num: 2, label: 'Model Training', status: 'upcoming', topPct: 50, side: 'left'  },
+  { num: 3, label: 'Deployment',     status: 'upcoming', topPct: 18, side: 'right' },
+  { num: 2, label: 'Model Training', status: 'upcoming', topPct: 42, side: 'left'  },
   {
     num: 1,
     label: 'Data Collection, Cleaning & Augmentation',
     status: 'active',
-    topPct: 78,
+    topPct: 70,
     side: 'right',
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
@@ -75,40 +75,43 @@ export default function Slide05_Timeline() {
       <div style={{
         position:  'absolute',
         left:      '50%',
-        top:       '14%',
-        bottom:    '8%',
-        width:     2,
+        top:       '12%',
+        bottom:    '6%',
+        width:     3,
         transform: 'translateX(-50%)',
-        zIndex:    5,
+        zIndex:    8,
+        mixBlendMode: 'screen',
       }}>
-        {/* Static faint spine */}
+        {/* Bright animated spine, drawn top-to-bottom */}
         <motion.div
           initial={{ scaleY: 0 }}
           whileInView={{ scaleY: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.1, ease: 'easeOut', delay: 0.1 }}
+          transition={{ duration: 1.4, ease: 'easeOut', delay: 0.1 }}
           style={{
             position:        'absolute',
             inset:           0,
-            background:      'linear-gradient(to bottom, transparent, rgba(74,222,128,.28) 6%, rgba(74,222,128,.28) 94%, transparent)',
+            background:      'linear-gradient(to bottom, rgba(74,222,128,0), #4ade80 8%, #4ade80 92%, rgba(74,222,128,0))',
             transformOrigin: 'top',
+            boxShadow:       '0 0 12px rgba(74,222,128,.85), 0 0 26px rgba(74,222,128,.55)',
+            borderRadius:    2,
           }}
         />
         {/* Animated traveling pulse — proves it's a timeline */}
         <motion.div
-          initial={{ top: '-12%' }}
-          animate={{ top: ['-12%', '100%'] }}
-          transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.4 }}
+          initial={{ top: '-15%' }}
+          animate={{ top: ['-15%', '100%'] }}
+          transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', repeatDelay: 0.3 }}
           style={{
             position:   'absolute',
             left:       '50%',
-            width:      4,
-            height:     '14%',
+            width:      8,
+            height:     '18%',
             transform:  'translateX(-50%)',
-            background: 'linear-gradient(to bottom, transparent, #4ade80 60%, transparent)',
-            filter:     'blur(0.5px)',
-            boxShadow:  '0 0 14px rgba(74,222,128,.9)',
-            borderRadius: 2,
+            background: 'linear-gradient(to bottom, transparent, #d4ffd4 55%, transparent)',
+            filter:     'blur(1px)',
+            boxShadow:  '0 0 22px #4ade80, 0 0 40px rgba(74,222,128,.8)',
+            borderRadius: 4,
           }}
         />
       </div>
