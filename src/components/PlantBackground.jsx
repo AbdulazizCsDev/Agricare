@@ -246,6 +246,7 @@ export default function PlantBackground() {
         rimI: makeVal(3.0),
         rotY: makeVal(0),
         canOp: makeVal(1),
+        pY:    makeVal(0),   /* plant vertical offset — rises off-screen for root view */
       }
 
       /* ── Animate ──────────────────────────────────────────── */
@@ -276,8 +277,6 @@ export default function PlantBackground() {
         }
         prevSecRef.current = sec
 
-        /* During reverse: no hold — camera moves continuously back */
-        const exitMs    = archExitMsRef.current
         const camTgt    = CAM_STATES[sec]
         const cxTarget  = (isTimeline || isRootView) ? plantX : camTgt.x
         const lkxTarget = (isTimeline || isRootView) ? plantX : camTgt.lx
@@ -306,13 +305,12 @@ export default function PlantBackground() {
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
-        /* Plant opacity: fade out entering root view, delay + slow fade-in leaving */
-        const ARCH_EXIT_DELAY = 1.08
-        const exitElapsed = exitMs ? (performance.now() - exitMs) / 1000 : 0
-        const canOpTarget = isRootView ? 0 : (!exitMs || exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
-        const canOpSpeed  = isRootView ? 0.022 : 0.008
-        const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
-        canvas.style.opacity = canOp
+        /* Plant rises off-screen (upward) for root views instead of fading in place.
+           The canvas itself stays at full opacity — the visual exit is the lift. */
+        const pYTarget = isRootView ? 8.5 : 0
+        const pYSpeed  = isRootView ? 0.020 : 0.024
+        const pY = lv.pY.v = lerp(lv.pY.v, pYTarget, pYSpeed)
+        canvas.style.opacity = 1
 
         rim.color.setRGB(rR, rG, rB)
         rim.intensity = rI + Math.sin(time * 0.55) * 0.6
@@ -328,6 +326,7 @@ export default function PlantBackground() {
           group.rotation.y = Math.sin(time * 0.28) * 0.012 + mx * 0.03 + rotY
           group.rotation.x = -my * 0.04 + Math.sin(time * 0.22) * 0.006
           group.rotation.z = wilt + Math.sin(time * 0.16) * (0.006 + sick * 0.014)
+          group.position.y = pY   /* lifts the tree up & out of frame for root view */
 
           const breathe = 1 + Math.sin(time * 0.72) * (0.006 + scan * 0.004)
           group.scale.setScalar(breathe)
