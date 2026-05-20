@@ -39,8 +39,9 @@ function lerp(a, b, t) { return a + (b - a) * t }
 function makeVal(v)     { return { v } }
 
 export default function PlantBackground() {
-  const canvasRef  = useRef(null)
-  const sectionRef = useRef('hero')
+  const canvasRef     = useRef(null)
+  const sectionRef    = useRef('hero')
+  const archExitMsRef = useRef(null)   /* timestamp when we left architecture */
 
   useEffect(() => {
     const obs = []
@@ -285,8 +286,16 @@ export default function PlantBackground() {
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
-        /* Fade out fast when entering arch, fade in slow when leaving */
-        const canOpTarget = isArch ? 0 : 1
+        /* Track when we leave architecture */
+        if (isArch)  archExitMsRef.current = null
+        else if (!archExitMsRef.current && lv.canOp.v < 0.5) archExitMsRef.current = performance.now()
+
+        /* Fade out fast entering arch; delay + slow fade-in leaving arch */
+        const ARCH_EXIT_DELAY = 0.9   /* seconds — matches root entry delay */
+        const exitElapsed = archExitMsRef.current
+          ? (performance.now() - archExitMsRef.current) / 1000
+          : 0
+        const canOpTarget = isArch ? 0 : (exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
         const canOpSpeed  = isArch ? 0.045 : 0.010
         const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
         canvas.style.opacity = canOp
