@@ -38,8 +38,8 @@ export default function Slide06_Architecture() {
         style={{
           ...glass,
           width:     '100%',
-          maxWidth:  860,
-          padding:   '48px 52px 44px',
+          maxWidth:  1100,
+          padding:   '52px 60px 48px',
           display:   'flex',
           flexDirection: 'column',
           gap:       32,
@@ -57,7 +57,7 @@ export default function Slide06_Architecture() {
           }}>
             SYSTEM ARCHITECTURE
           </p>
-          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
+          <h2 style={{ fontSize: '2.6rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
             Request{' '}
             <span style={{ color: 'rgba(240,253,244,0.3)', fontSize: '1.5rem', fontWeight: 300 }}>→</span>{' '}
             <span style={{ color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.4)' }}>
@@ -89,14 +89,14 @@ export default function Slide06_Architecture() {
         >
           {['PyTorch', 'EfficientNet-B0', 'FastAPI', 'Docker', 'Uvicorn', 'torchvision'].map((tech) => (
             <span key={tech} style={{
-              fontSize:   '0.62rem',
+              fontSize:   '0.82rem',
               fontWeight: 600,
               fontFamily: 'JetBrains Mono, monospace',
-              color:      'rgba(74,222,128,0.7)',
+              color:      'rgba(74,222,128,0.85)',
               background: 'rgba(74,222,128,0.08)',
-              border:     '1px solid rgba(74,222,128,0.18)',
+              border:     '1px solid rgba(74,222,128,0.22)',
               borderRadius: 100,
-              padding:    '3px 9px',
+              padding:    '5px 14px',
             }}>
               {tech}
             </span>
@@ -123,16 +123,16 @@ export default function Slide06_Architecture() {
                 style={{
                   display:    'flex',
                   alignItems: 'center',
-                  gap:        7,
-                  padding:    '7px 13px',
+                  gap:        9,
+                  padding:    '10px 18px',
                   borderRadius: 100,
                   background: `${f.color}10`,
                   border:     `1px solid ${f.color}30`,
                   backdropFilter: 'blur(8px)',
                 }}
               >
-                <Icon size={12} color={f.color} />
-                <span style={{ fontSize: '0.70rem', fontWeight: 600, color: 'rgba(240,253,244,0.85)' }}>
+                <Icon size={16} color={f.color} />
+                <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'rgba(240,253,244,0.85)' }}>
                   {f.label}
                 </span>
               </motion.div>

@@ -7,6 +7,7 @@ import Slide03_Problem from './slides/Slide03_Problem'
 import Slide04_Solution from './slides/Slide04_Solution'
 import Slide05_Timeline from './slides/Slide05_Timeline'
 import Slide06_Architecture from './slides/Slide06_Architecture'
+import Slide07_TechStack from './slides/Slide07_TechStack'
 
 const sectionStyle = { minHeight: '100vh', position: 'relative', zIndex: 1, overflow: 'hidden' }
 
@@ -26,6 +27,7 @@ export default function App() {
       <section id="solution"     style={sectionStyle}><Slide04_Solution /></section>
       <section id="timeline" style={sectionStyle}><Slide05_Timeline /></section>
       <section id="architecture" style={sectionStyle}><Slide06_Architecture /></section>
+      <section id="techstack"    style={sectionStyle}><Slide07_TechStack /></section>
     </div>
   )
 }
