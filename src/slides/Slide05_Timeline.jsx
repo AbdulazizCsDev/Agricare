@@ -12,21 +12,21 @@ import { motion } from 'framer-motion'
  *   Canopy tip       ≈  worldY  2.0  →  19%
  */
 const STAGES = [
+  { num: 4, label: 'Deployment',               status: 'upcoming', topPct:  6, side: 'right' },
+  { num: 3, label: 'Evaluation & Benchmarking', status: 'upcoming', topPct: 19, side: 'left'  },
+  { num: 2, label: 'Model Training',            status: 'upcoming', topPct: 36, side: 'right' },
   {
-    /* topmost on screen = furthest in the future = Deployment */
-    num: 5, label: 'Deployment',                status: 'upcoming', topPct:  5, side: 'right',
-  },
-  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 13, side: 'left'  },
-  { num: 3, label: 'Model Training',              status: 'upcoming', topPct: 30, side: 'right' },
-  { num: 2, label: 'Data Augmentation',           status: 'upcoming', topPct: 46, side: 'left'  },
-  {
-    /* bottommost on screen = current stage = Data Collection (root) */
-    num: 1, label: 'Data Collection & Cleaning', status: 'active',   topPct: 51, leftShift: 5, side: 'right',
+    num: 1,
+    label: 'Data Collection, Cleaning & Augmentation',
+    status: 'active',
+    topPct: 55,
+    leftShift: 5,
+    side: 'right',
     tasks: [
-      { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
-      { member: 'Abdulaziz',  task: 'Deduplication + blur detection'          },
-      { member: 'Abdulmalik', task: 'Label verification + mislabel detection' },
-      { member: 'Musaad',     task: 'Class imbalance + train/val/test splits' },
+      { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'         },
+      { member: 'Abdulaziz',  task: 'Deduplication + blur detection'             },
+      { member: 'Abdulmalik', task: 'Label verification + mislabel detection'    },
+      { member: 'Musaad',     task: 'Class imbalance + augmentation + splits'    },
     ],
   },
 ]
@@ -53,7 +53,7 @@ export default function Slide05_Timeline() {
           PROJECT TIMELINE
         </p>
         <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
-          5 Stages —{' '}
+          4 Stages —{' '}
           <span style={{ color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.4)' }}>
             Stage 1
           </span>
@@ -136,16 +136,16 @@ function NodeDot({ isActive }) {
   return (
     <motion.div
       animate={isActive ? {
-        boxShadow: ['0 0 0 0px rgba(74,222,128,0.55)', '0 0 0 10px rgba(74,222,128,0)'],
+        boxShadow: ['0 0 0 0px rgba(74,222,128,0.6)', '0 0 0 16px rgba(74,222,128,0)'],
       } : {}}
       transition={{ duration: 1.8, repeat: Infinity }}
       style={{
-        width:        isActive ? 18 : 11,
-        height:       isActive ? 18 : 11,
+        width:        isActive ? 26 : 17,
+        height:       isActive ? 26 : 17,
         borderRadius: '50%',
-        background:   isActive ? '#4ade80' : 'rgba(74,222,128,0.1)',
-        border:       `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.38)'}`,
-        boxShadow:    isActive ? '0 0 18px rgba(74,222,128,0.8)' : '0 0 5px rgba(74,222,128,0.15)',
+        background:   isActive ? '#4ade80' : 'rgba(74,222,128,0.12)',
+        border:       `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.5)'}`,
+        boxShadow:    isActive ? '0 0 24px rgba(74,222,128,0.9)' : '0 0 8px rgba(74,222,128,0.25)',
         flexShrink:   0,
         transition:   'width 0.3s, height 0.3s',
       }}
