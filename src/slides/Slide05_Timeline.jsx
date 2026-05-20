@@ -5,18 +5,18 @@ const STAGES = [
     num: 1,
     label: 'Data Collection & Cleaning',
     status: 'active',
-    topPct: 74,
+    topPct: 73,
     tasks: [
-      { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'       },
-      { member: 'Abdulaziz',  task: 'Deduplication + blur detection'           },
-      { member: 'Abdulmalik', task: 'Label verification + mislabel detection'  },
-      { member: 'Musaad',     task: 'Class imbalance + train/val/test splits'  },
+      { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
+      { member: 'Abdulaziz',  task: 'Deduplication + blur detection'          },
+      { member: 'Abdulmalik', task: 'Label verification + mislabel detection' },
+      { member: 'Musaad',     task: 'Class imbalance + train/val/test splits' },
     ],
   },
-  { num: 2, label: 'Data Augmentation',          status: 'upcoming', topPct: 57 },
-  { num: 3, label: 'Model Training',              status: 'upcoming', topPct: 41 },
-  { num: 4, label: 'Evaluation & Benchmarking',   status: 'upcoming', topPct: 25 },
-  { num: 5, label: 'Deployment',                  status: 'upcoming', topPct: 10 },
+  { num: 2, label: 'Data Augmentation',         status: 'upcoming', topPct: 57 },
+  { num: 3, label: 'Model Training',             status: 'upcoming', topPct: 42 },
+  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 27 },
+  { num: 5, label: 'Deployment',                 status: 'upcoming', topPct: 13 },
 ]
 
 export default function Slide05_Timeline() {
@@ -25,7 +25,6 @@ export default function Slide05_Timeline() {
       width: '100%',
       minHeight: '100vh',
       position: 'relative',
-      background: 'linear-gradient(90deg, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.35) 44%, transparent 60%)',
     }}>
 
       {/* Header — top left */}
@@ -34,18 +33,18 @@ export default function Slide05_Timeline() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.35 }}
-        style={{ position: 'absolute', top: 40, left: 52, zIndex: 10 }}
+        style={{ position: 'absolute', top: 36, left: 48, zIndex: 10 }}
       >
         <p style={{
           fontFamily: 'JetBrains Mono, monospace',
-          fontSize: '0.68rem',
+          fontSize: '0.66rem',
           color: 'rgba(74,222,128,0.55)',
           letterSpacing: '0.14em',
-          marginBottom: 8,
+          marginBottom: 6,
         }}>
           PROJECT TIMELINE
         </p>
-        <h2 style={{ fontSize: '1.9rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
+        <h2 style={{ fontSize: '1.7rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
           5 Stages —{' '}
           <span style={{ color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.4)' }}>
             Stage 1
@@ -54,14 +53,14 @@ export default function Slide05_Timeline() {
         </h2>
       </motion.div>
 
-      {/* Vertical spine along plant */}
+      {/* Vertical spine — centered on screen to follow plant trunk */}
       <div style={{
         position: 'absolute',
         left: '50%',
-        top: '8%',
-        bottom: '6%',
+        top: '10%',
+        bottom: '22%',
         width: 1,
-        background: 'linear-gradient(to bottom, transparent, rgba(74,222,128,0.18) 15%, rgba(74,222,128,0.18) 85%, transparent)',
+        background: 'linear-gradient(to bottom, transparent, rgba(74,222,128,0.22) 12%, rgba(74,222,128,0.22) 88%, transparent)',
         transform: 'translateX(-50%)',
         zIndex: 5,
       }} />
@@ -72,7 +71,7 @@ export default function Slide05_Timeline() {
         return (
           <motion.div
             key={stage.num}
-            initial={{ opacity: 0, x: -24 }}
+            initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ delay: idx * 0.1, duration: 0.4 }}
@@ -82,93 +81,105 @@ export default function Slide05_Timeline() {
               left: 0,
               right: 0,
               display: 'flex',
-              alignItems: 'flex-start',
+              alignItems: 'center',
               zIndex: 10,
             }}
           >
             {/* Label card — left half */}
             <div style={{
-              width: 'calc(50% - 28px)',
+              width: 'calc(50% - 32px)',
               display: 'flex',
               justifyContent: 'flex-end',
-              paddingRight: 8,
+              paddingRight: 10,
               transform: 'translateY(-50%)',
             }}>
               <div style={{
-                padding: isActive ? '14px 16px' : '9px 14px',
-                borderRadius: 12,
-                background: isActive ? 'rgba(74,222,128,0.1)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${isActive ? 'rgba(74,222,128,0.35)' : 'rgba(255,255,255,0.07)'}`,
-                maxWidth: 340,
+                padding: isActive ? '11px 13px' : '7px 12px',
+                borderRadius: 10,
+                background: isActive ? 'rgba(74,222,128,0.09)' : 'rgba(255,255,255,0.025)',
+                border: `1px solid ${isActive ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                maxWidth: 310,
                 textAlign: 'right',
+                backdropFilter: 'blur(6px)',
               }}>
-                {/* Stage title row */}
+                {/* Title row */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'flex-end',
-                  gap: 8,
-                  marginBottom: isActive ? 10 : 0,
+                  gap: 7,
+                  marginBottom: isActive ? 8 : 0,
                 }}>
                   {isActive && (
                     <motion.span
                       animate={{ opacity: [1, 0.35, 1] }}
                       transition={{ duration: 1.6, repeat: Infinity }}
                       style={{
-                        fontSize: '0.58rem',
+                        fontSize: '0.54rem',
                         fontWeight: 700,
                         fontFamily: 'JetBrains Mono, monospace',
                         color: '#4ade80',
                         background: 'rgba(74,222,128,0.12)',
-                        border: '1px solid rgba(74,222,128,0.3)',
+                        border: '1px solid rgba(74,222,128,0.28)',
                         borderRadius: 100,
-                        padding: '2px 7px',
+                        padding: '2px 6px',
                         letterSpacing: '0.1em',
+                        flexShrink: 0,
                       }}
                     >
                       IN PROGRESS
                     </motion.span>
                   )}
                   <span style={{
-                    fontSize: '0.6rem',
+                    fontSize: '0.58rem',
                     fontFamily: 'JetBrains Mono, monospace',
-                    color: isActive ? 'rgba(74,222,128,0.6)' : 'rgba(255,255,255,0.25)',
+                    color: isActive ? 'rgba(74,222,128,0.55)' : 'rgba(255,255,255,0.22)',
+                    flexShrink: 0,
                   }}>
                     {`S${stage.num}`}
                   </span>
                   <span style={{
-                    fontSize: isActive ? '0.88rem' : '0.78rem',
+                    fontSize: isActive ? '0.8rem' : '0.7rem',
                     fontWeight: isActive ? 700 : 500,
-                    color: isActive ? '#f0fdf4' : 'rgba(240,253,244,0.38)',
+                    color: isActive ? '#f0fdf4' : 'rgba(240,253,244,0.32)',
+                    lineHeight: 1.3,
                   }}>
                     {stage.label}
                   </span>
                 </div>
 
-                {/* Tasks — active stage only */}
+                {/* Tasks — compact rows */}
                 {isActive && stage.tasks?.map((t, ti) => (
                   <div key={ti} style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
-                    padding: '5px 0',
+                    gap: 7,
+                    padding: '3px 0',
                     borderTop: `1px solid rgba(74,222,128,${ti === 0 ? '0.14' : '0.06'})`,
                     justifyContent: 'flex-end',
                   }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '0.72rem', color: 'rgba(240,253,244,0.82)', display: 'block', lineHeight: 1.4 }}>
+                    <div style={{ textAlign: 'right', minWidth: 0 }}>
+                      <span style={{
+                        fontSize: '0.65rem',
+                        color: 'rgba(240,253,244,0.78)',
+                        display: 'block',
+                        lineHeight: 1.3,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
                         {t.task}
                       </span>
                       <span style={{
-                        fontSize: '0.6rem',
-                        color: 'rgba(74,222,128,0.55)',
+                        fontSize: '0.54rem',
+                        color: 'rgba(74,222,128,0.5)',
                         fontFamily: 'JetBrains Mono, monospace',
                       }}>
                         {t.member}
                       </span>
                     </div>
                     <div style={{
-                      width: 6, height: 6, borderRadius: '50%',
+                      width: 5, height: 5, borderRadius: '50%',
                       background: '#4ade80', flexShrink: 0,
                       boxShadow: '0 0 5px rgba(74,222,128,0.6)',
                     }} />
@@ -177,24 +188,24 @@ export default function Slide05_Timeline() {
               </div>
             </div>
 
-            {/* Connector + Node */}
+            {/* Connector line + Node dot at spine */}
             <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, transform: 'translateY(-50%)' }}>
               <div style={{
-                width: 20, height: 1,
-                background: isActive ? 'rgba(74,222,128,0.5)' : 'rgba(74,222,128,0.12)',
+                width: 22, height: 1,
+                background: isActive ? 'rgba(74,222,128,0.45)' : 'rgba(74,222,128,0.1)',
               }} />
               <motion.div
                 animate={isActive ? {
-                  boxShadow: ['0 0 0 0px rgba(74,222,128,0.5)', '0 0 0 8px rgba(74,222,128,0)'],
+                  boxShadow: ['0 0 0 0px rgba(74,222,128,0.5)', '0 0 0 7px rgba(74,222,128,0)'],
                 } : {}}
                 transition={{ duration: 1.6, repeat: Infinity }}
                 style={{
-                  width:  isActive ? 18 : 9,
-                  height: isActive ? 18 : 9,
+                  width:  isActive ? 16 : 8,
+                  height: isActive ? 16 : 8,
                   borderRadius: '50%',
                   background: isActive ? '#4ade80' : 'transparent',
-                  border: `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.22)'}`,
-                  boxShadow: isActive ? '0 0 14px rgba(74,222,128,0.7)' : 'none',
+                  border: `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.2)'}`,
+                  boxShadow: isActive ? '0 0 12px rgba(74,222,128,0.7)' : 'none',
                   flexShrink: 0,
                 }}
               />

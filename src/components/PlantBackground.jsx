@@ -9,7 +9,7 @@ const CAM_STATES = {
   hero:         { x: -1.0, y: 1.0, z: 6.5, lx: -0.5, ly: 1.0, lz: 0 },
   problem:      { x: -0.5, y: 1.8, z: 7.2, lx: -0.5, ly: 1.6, lz: 0 },
   solution:     { x: -0.5, y: 0.6, z: 7.0, lx: -0.5, ly: 0.6, lz: 0 },
-  timeline:     { x:  0.0, y: 1.2, z: 8.5, lx:  0.0, ly: 1.0, lz: 0 }, /* lx overridden in animate */
+  timeline:     { x:  0.0, y: 1.4, z: 12.0, lx:  0.0, ly: 1.4, lz: 0 }, /* x/lx overridden in animate */
   architecture: { x: -0.5, y: 1.4, z: 6.0, lx: -0.5, ly: 1.2, lz: 0 },
 }
 
@@ -247,11 +247,12 @@ export default function PlantBackground() {
         const camTgt = CAM_STATES[sec]
         const fxTgt  = FX[sec]
 
-        const cx  = lv.camX.v = lerp(lv.camX.v, camTgt.x,  0.055)
+        // For timeline: camera moves in front of plant, both position and lookAt track plantX
+        const cxTarget  = sec === 'timeline' ? plantX        : camTgt.x
+        const lkxTarget = sec === 'timeline' ? plantX        : camTgt.lx
+        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  0.055)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  0.055)
-        // For timeline, look at plant center; otherwise look at content area
-        const lkxTarget = sec === 'timeline' ? plantX : camTgt.lx
         const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget, 0.055)
         const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly, 0.055)
         const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz, 0.055)
