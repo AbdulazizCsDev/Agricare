@@ -24,7 +24,8 @@ export default function RootCanvas() {
     Promise.all([
       import('three'),
       import('three/examples/jsm/loaders/GLTFLoader.js'),
-    ]).then(([THREE, { GLTFLoader }]) => {
+      import('three/examples/jsm/loaders/DRACOLoader.js'),
+    ]).then(([THREE, { GLTFLoader }, { DRACOLoader }]) => {
       if (cancelled) return
       const canvas = canvasRef.current
       if (!canvas) return
@@ -80,7 +81,12 @@ export default function RootCanvas() {
       scene.add(group)
       let modelReady = false
 
-      new GLTFLoader().load('/root/scene.gltf', (gltf) => {
+      const dracoLoader = new DRACOLoader()
+      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+      const gltfLoader = new GLTFLoader()
+      gltfLoader.setDRACOLoader(dracoLoader)
+
+      gltfLoader.load('/root/scene.glb', (gltf) => {
         if (cancelled) return
         const model = gltf.scene
         const box    = new THREE.Box3().setFromObject(model)

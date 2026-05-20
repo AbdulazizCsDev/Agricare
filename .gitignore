@@ -25,3 +25,4 @@ dist-ssr
 
 .vercel
 public/root/scene.bin
+public/root/scene.gltf
