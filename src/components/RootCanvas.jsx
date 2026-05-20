@@ -52,28 +52,24 @@ export default function RootCanvas() {
       const scene = new THREE.Scene()
       scene.add(new THREE.AmbientLight(0x010e06, 1.5))
 
-      /* Warm natural lighting — soil / earthy tones */
-      const rimA = new THREE.PointLight(0xffcc77, 7, 16)
+      /* Soft warm ambient — muted underground feel */
+      const rimA = new THREE.PointLight(0xaa7744, 3.5, 18)
       rimA.position.set(-2, 0.5, 2)
       scene.add(rimA)
 
-      const rimB = new THREE.PointLight(0xff9944, 5, 14)
+      const rimB = new THREE.PointLight(0x997755, 2.5, 16)
       rimB.position.set(2, -0.5, 2)
       scene.add(rimB)
 
-      const rimC = new THREE.PointLight(0x331100, 4, 10)
-      rimC.position.set(0, -2, 0.5)
-      scene.add(rimC)
-
+      /* ── Electricity: 2 lights that travel upward through roots ─ */
       const pulseDefs = [
-        { color: 0xffbb55, speed: 1.8, phase: 0.0,  radius: 1.3 },
-        { color: 0xff8833, speed: 2.4, phase: 2.1,  radius: 0.9 },
-        { color: 0xddaa44, speed: 1.3, phase: 4.2,  radius: 1.6 },
+        { color: 0xaaddff, speed: 0.55, phase: 0.0  },
+        { color: 0xbbeeff, speed: 0.55, phase: Math.PI },
       ]
-      const pulses = pulseDefs.map(({ color, speed, phase, radius }) => {
-        const light = new THREE.PointLight(color, 0, 5)
+      const pulses = pulseDefs.map(({ color, speed, phase }) => {
+        const light = new THREE.PointLight(color, 0, 4)
         scene.add(light)
-        return { light, speed, phase, radius, yPh: Math.random() * Math.PI * 2 }
+        return { light, speed, phase }
       })
 
       /* ── Resize ───────────────────────────────────────────── */
@@ -108,13 +104,13 @@ export default function RootCanvas() {
           model.scale.setScalar(scale)
           model.position.sub(center.multiplyScalar(scale))
 
-          /* Natural root colour — warm tan/brown like actual corn roots */
+          /* Muted dark earth — subtle, not distracting */
           const sharedMat = new THREE.MeshStandardMaterial({
-            color:             new THREE.Color(0.52, 0.34, 0.18),
-            roughness:         0.82,
-            metalness:         0.05,
-            emissive:          new THREE.Color(0x1a0800),
-            emissiveIntensity: 0.6,
+            color:             new THREE.Color(0.20, 0.13, 0.07),
+            roughness:         0.88,
+            metalness:         0.04,
+            emissive:          new THREE.Color(0x0a0400),
+            emissiveIntensity: 0.4,
           })
           model.traverse((child) => {
             if (child.isMesh) child.material = sharedMat
@@ -184,19 +180,22 @@ export default function RootCanvas() {
           group.position.y  = yOffset + Math.sin(time * 0.18) * 0.07
 
           const lightScale = Math.min(1, opLerp * 1.5)
-          pulses.forEach(({ light, speed, phase, radius, yPh }, i) => {
-            const t = time * speed + phase
-            light.position.set(
-              Math.cos(t) * radius,
-              -0.2 + Math.sin(time * 0.6 + yPh) * 1.4,
-              Math.sin(t * 0.9) * radius * 0.7 + 1.0
-            )
-            light.intensity = Math.pow(Math.abs(Math.sin(time * (1.6 + i * 0.3) + phase)), 5) * 14 * lightScale
+
+          /* Electricity: two lights traveling bottom→top continuously */
+          pulses.forEach(({ light, speed, phase }) => {
+            /* y loops -2.5 → +2.5, offset by phase so they alternate */
+            const t   = ((time * speed + phase) % (Math.PI * 2)) / (Math.PI * 2)
+            const y   = -2.5 + t * 5.0
+            /* x wanders slightly — follows root branching feel */
+            const x   = Math.sin(time * 0.4 + phase) * 0.6
+            light.position.set(x, y, 1.2)
+            /* Intensity: soft, just a hint — fades at top and bottom */
+            const edge = Math.min(t, 1 - t) * 4        // 0 at ends, 1 in middle
+            light.intensity = Math.min(1, edge) * 4.5 * lightScale
           })
 
-          rimA.intensity = (6 + Math.sin(time * 0.8) * 2.5)      * lightScale
-          rimB.intensity = (4 + Math.sin(time * 0.6 + 1.1) * 2)  * lightScale
-          rimC.intensity = (3 + Math.abs(Math.sin(time * 1.3)) * 2) * lightScale
+          rimA.intensity = (3 + Math.sin(time * 0.5) * 1)   * lightScale
+          rimB.intensity = (2 + Math.sin(time * 0.4) * 0.8) * lightScale
         }
 
         /* Camera drifts slowly inside the root network */
