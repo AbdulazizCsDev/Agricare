@@ -41,6 +41,7 @@ function makeVal(v)     { return { v } }
 export default function PlantBackground() {
   const canvasRef     = useRef(null)
   const sectionRef    = useRef('hero')
+  const prevSecRef    = useRef('hero')
   const archExitMsRef = useRef(null)   /* timestamp when we left architecture */
 
   useEffect(() => {
@@ -253,17 +254,31 @@ export default function PlantBackground() {
         raf = requestAnimationFrame(animate)
         time += 0.01
 
-        const sec    = sectionRef.current || 'hero'
-        const camTgt = CAM_STATES[sec]
-        const fxTgt  = FX[sec]
+        const sec = sectionRef.current || 'hero'
+        const fxTgt = FX[sec]
 
-        // Timeline & architecture: camera centers on plant (tracks plantX)
-        const isTimeline = sec === 'timeline'
+        /* Detect the exact moment we leave architecture */
+        if (prevSecRef.current === 'architecture' && sec !== 'architecture') {
+          archExitMsRef.current = performance.now()
+        }
+        prevSecRef.current = sec
+
         const isArch     = sec === 'architecture'
-        const cxTarget  = (isTimeline || isArch) ? plantX : camTgt.x
-        const lkxTarget = (isTimeline || isArch) ? plantX : camTgt.lx
-        /* Slow smooth lerp into architecture zoom */
-        const lT  = isArch ? 0.038 : 0.055
+        const isTimeline = sec === 'timeline'
+
+        /* During reverse transition: hold arch camera so zoom-out is visible */
+        const HOLD_MS = 1500   /* ms to keep arch zoom while plant fades in */
+        const exitMs  = archExitMsRef.current
+        const isHolding = !isArch && exitMs && (performance.now() - exitMs) < HOLD_MS
+
+        /* Camera target — hold arch position during reverse transition */
+        const activeSec = (isArch || isHolding) ? 'architecture' : sec
+        const camTgt    = CAM_STATES[activeSec]
+        const cxTarget  = (isTimeline || isArch || isHolding) ? plantX : camTgt.x
+        const lkxTarget = (isTimeline || isArch || isHolding) ? plantX : camTgt.lx
+
+        /* Matching lerp speed both ways */
+        const lT  = 0.038
         const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  lT)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  lT)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  lT)
@@ -286,15 +301,9 @@ export default function PlantBackground() {
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
-        /* Track when we leave architecture */
-        if (isArch)  archExitMsRef.current = null
-        else if (!archExitMsRef.current && lv.canOp.v < 0.5) archExitMsRef.current = performance.now()
-
-        /* Fade out fast entering arch; delay + slow fade-in leaving arch */
-        const ARCH_EXIT_DELAY = 0.9   /* seconds — matches root entry delay */
-        const exitElapsed = archExitMsRef.current
-          ? (performance.now() - archExitMsRef.current) / 1000
-          : 0
+        /* Plant opacity: fade out entering arch, delay + slow fade-in leaving */
+        const ARCH_EXIT_DELAY = 0.9   /* seconds — mirrors root ENTRY_DELAY */
+        const exitElapsed = exitMs ? (performance.now() - exitMs) / 1000 : 0
         const canOpTarget = isArch ? 0 : (exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
         const canOpSpeed  = isArch ? 0.045 : 0.010
         const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
