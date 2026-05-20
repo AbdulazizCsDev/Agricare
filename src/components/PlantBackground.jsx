@@ -304,9 +304,10 @@ export default function PlantBackground() {
         camera.lookAt(lkx, lky, lkz)
 
         /* Plant opacity: fade out entering arch, delay + slow fade-in leaving */
-        const ARCH_EXIT_DELAY = 0.9   /* seconds — mirrors root ENTRY_DELAY */
+        const ARCH_EXIT_DELAY = 0.9
         const exitElapsed = exitMs ? (performance.now() - exitMs) / 1000 : 0
-        const canOpTarget = isArch ? 0 : (exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
+        /* Show plant normally unless: in arch OR within delay after leaving arch */
+        const canOpTarget = isArch ? 0 : (!exitMs || exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
         const canOpSpeed  = isArch ? 0.045 : 0.010
         const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
         canvas.style.opacity = canOp
