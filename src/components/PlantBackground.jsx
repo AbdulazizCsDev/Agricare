@@ -121,70 +121,37 @@ export default function PlantBackground() {
       diseaseLight.position.set(plantX, 1.5, 0.5)
       scene.add(diseaseLight)
 
-      /* ── Scan system ──────────────────────────────────────── */
-      const SCAN_W = 3.8, SCAN_D = 3.8
+      /* ── Scan system — particle sweep ────────────────────── */
+      const LAYER_COUNT   = 18
+      const PTS_PER_LAYER = 38
+      const scanLayers    = []
 
-      // Ultra-thin bright beam
-      const beamMat = new THREE.MeshBasicMaterial({
-        color: 0xccffdd, transparent: true, opacity: 0, depthWrite: false,
-      })
-      const scanBeam = new THREE.Mesh(new THREE.BoxGeometry(SCAN_W, 0.004, SCAN_D), beamMat)
-      scene.add(scanBeam)
-
-      // Echo trails (5 fading planes behind the beam)
-      const ECHO_COUNT = 5
-      const echoMats   = []
-      const echoMeshes = []
-      for (let i = 0; i < ECHO_COUNT; i++) {
-        const m = new THREE.MeshBasicMaterial({
-          color: 0x4ade80, transparent: true, opacity: 0, depthWrite: false,
+      for (let l = 0; l < LAYER_COUNT; l++) {
+        const baseY     = -1.0 + (l / (LAYER_COUNT - 1)) * 4.5
+        const positions = []
+        for (let p = 0; p < PTS_PER_LAYER; p++) {
+          const angle = Math.random() * Math.PI * 2
+          const r     = Math.sqrt(Math.random()) * 1.5
+          positions.push(
+            Math.cos(angle) * r,
+            baseY + (Math.random() - 0.5) * 0.22,
+            Math.sin(angle) * r,
+          )
+        }
+        const geo = new THREE.BufferGeometry()
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+        const mat = new THREE.PointsMaterial({
+          color: 0x4ade80, size: 0.07, transparent: true, opacity: 0,
+          depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true,
         })
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(SCAN_W, 0.003, SCAN_D), m)
-        scene.add(mesh)
-        echoMats.push(m)
-        echoMeshes.push(mesh)
+        const pts = new THREE.Points(geo, mat)
+        scene.add(pts)
+        scanLayers.push({ pts, mat, baseY })
       }
 
-      // Wireframe bounding box
-      const bboxMat = new THREE.LineBasicMaterial({
-        color: 0x4ade80, transparent: true, opacity: 0,
-      })
-      const bboxLines = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.BoxGeometry(SCAN_W, 4.4, SCAN_D)),
-        bboxMat,
-      )
-      scene.add(bboxLines)
-
-      // Corner brackets (front face only — 4 corners × 2 arms)
-      const CW = SCAN_W / 2, CD = SCAN_D / 2, ARM = 0.4
-      const HT = 2.2, HB = -2.2   // half-heights of bbox
-      const bracketVerts = [
-        // top-left
-        -CW, HT, CD,   -CW + ARM, HT, CD,
-        -CW, HT, CD,   -CW, HT - ARM, CD,
-        // top-right
-         CW, HT, CD,    CW - ARM, HT, CD,
-         CW, HT, CD,    CW, HT - ARM, CD,
-        // bottom-left
-        -CW, HB, CD,   -CW + ARM, HB, CD,
-        -CW, HB, CD,   -CW, HB + ARM, CD,
-        // bottom-right
-         CW, HB, CD,    CW - ARM, HB, CD,
-         CW, HB, CD,    CW, HB + ARM, CD,
-      ]
-      const bracketGeo = new THREE.BufferGeometry()
-      bracketGeo.setAttribute('position', new THREE.Float32BufferAttribute(bracketVerts, 3))
-      const bracketMat = new THREE.LineBasicMaterial({
-        color: 0xaaffc8, transparent: true, opacity: 0,
-      })
-      const brackets = new THREE.LineSegments(bracketGeo, bracketMat)
-      scene.add(brackets)
-
-      // Scan lights — tight beam light + wider diffuse
-      const scanLight  = new THREE.PointLight(0x4ade80, 0, 7)
-      const scanLight2 = new THREE.PointLight(0x4ade80, 0, 16)
+      // Light that follows the wave
+      const scanLight = new THREE.PointLight(0x4ade80, 0, 10)
       scene.add(scanLight)
-      scene.add(scanLight2)
 
       /* ── Model ────────────────────────────────────────────── */
       const draco = new DRACOLoader()
@@ -237,8 +204,7 @@ export default function PlantBackground() {
         rim.position.setX(plantX - 3)
         fill.position.setX(plantX - 4)
         diseaseLight.position.setX(plantX)
-        bboxLines.position.x = plantX
-        brackets.position.x  = plantX
+        scanLayers.forEach(({ pts }) => { pts.position.x = plantX })
         if (modelReady) group.position.x = plantX
       }
 
@@ -334,44 +300,28 @@ export default function PlantBackground() {
         }
 
         if (scan > 0.01) {
-          scanY += scanDir * 0.018
-          if (scanY >  2.2) { scanY =  2.2; scanDir = -1 }
-          if (scanY < -2.2) { scanY = -2.2; scanDir =  1 }
+          scanY += scanDir * 0.022
+          if (scanY >  2.5) { scanY =  2.5; scanDir = -1 }
+          if (scanY < -1.0) { scanY = -1.0; scanDir =  1 }
 
-          // Beam — subtle brightness pulse
-          const pulse = Math.sin(time * 7) * 0.06
-          scanBeam.position.set(plantX, scanY, 0)
-          beamMat.opacity = scan * (0.92 + pulse)
-
-          // Echo trails behind the beam
-          echoMeshes.forEach((mesh, i) => {
-            const offset = (i + 1) * 0.1 * -scanDir
-            mesh.position.set(plantX, scanY + offset, 0)
-            echoMats[i].opacity = scan * Math.max(0, 0.55 - i * 0.1)
+          scanLayers.forEach(({ pts, mat, baseY }) => {
+            pts.position.x = plantX
+            const dist  = Math.abs(baseY - scanY)
+            // Sharp wave flash at the sweep front
+            const wave  = Math.pow(Math.max(0, 1 - dist / 0.45), 2)
+            // Already-swept layers keep a faint sequential twinkle
+            const swept = scanDir > 0 ? baseY <= scanY : baseY >= scanY
+            const twinkle = swept
+              ? scan * 0.18 * (0.5 + 0.5 * Math.sin(time * 9 + baseY * 5.3))
+              : 0
+            mat.opacity = scan * wave * 0.95 + twinkle
           })
 
-          // Wireframe bounding box — fades in, slow pulse
-          bboxLines.position.set(plantX, 0, 0)
-          bboxMat.opacity = scan * (0.28 + Math.sin(time * 1.2) * 0.05)
-
-          // Corner brackets — brighter than box
-          brackets.position.set(plantX, 0, 0)
-          bracketMat.opacity = scan * (0.75 + Math.sin(time * 1.8) * 0.08)
-
-          // Tight beam light
-          scanLight.position.set(plantX, scanY, 0.6)
-          scanLight.intensity = scan * (3.5 + Math.sin(time * 6) * 0.6)
-
-          // Wider diffuse fill light
-          scanLight2.position.set(plantX, scanY, 0)
-          scanLight2.intensity = scan * 1.4
+          scanLight.position.set(plantX, scanY, 0.8)
+          scanLight.intensity = scan * (3.5 + Math.sin(time * 6) * 0.7)
         } else {
-          beamMat.opacity = 0
-          echoMats.forEach(m => { m.opacity = 0 })
-          bboxMat.opacity     = 0
-          bracketMat.opacity  = 0
-          scanLight.intensity  = 0
-          scanLight2.intensity = 0
+          scanLayers.forEach(({ mat }) => { mat.opacity = 0 })
+          scanLight.intensity = 0
         }
 
         renderer.render(scene, camera)
