@@ -2,152 +2,134 @@ import { motion } from 'framer-motion'
 import { AlertTriangle } from 'lucide-react'
 
 const PROBLEMS = [
-  {
-    text: 'Poor model accuracy due to limited data or its poor quality.',
-    color: '#fbbf24',
-  },
-  {
-    text: 'Customer support team lacks a background in agronomy and requires specialized training — they rely on LLMs.',
-    color: '#ef4444',
-  },
-  {
-    text: 'It is expensive to keep customer service employees available 24/7.',
-    color: '#f97316',
-  },
-  {
-    text: 'Wrong diagnoses lead to bad pesticide recommendations for farmers and sellers.',
-    color: '#fbbf24',
-  },
+  { text: 'Poor model accuracy due to limited data or its poor quality.',                                                              color: '#fbbf24' },
+  { text: 'Customer support team lacks agronomy background — they rely on LLMs.',                                                     color: '#ef4444' },
+  { text: 'Expensive to keep customer service staff available 24/7.',                                                                 color: '#f97316' },
+  { text: 'Wrong diagnoses lead to bad pesticide recommendations for farmers.',                                                        color: '#fbbf24' },
 ]
 
-const vp = { once: true, margin: '-80px' }
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } },
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  show:   { opacity: 1, y:  0, transition: { duration: 0.45, ease: 'easeOut' } },
+}
+
+const slideIn = {
+  hidden: { opacity: 0, x: -28 },
+  show:   { opacity: 1, x:   0, transition: { duration: 0.42, ease: 'easeOut' } },
+}
+
+const vp = { once: true, amount: 0.15 }
 
 export default function Slide03_Problem() {
   return (
-    <div
-      style={{
-        width: '100%',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        padding: '100px 52px 80px',
-        gap: 48,
-        maxWidth: '54vw',
-        background: 'linear-gradient(90deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.6) 70%, transparent 100%)',
-        position: 'relative',
-      }}
-    >
-      {/* Header */}
+    <div style={{
+      width:          '100%',
+      height:         '100vh',
+      display:        'flex',
+      flexDirection:  'column',
+      justifyContent: 'center',
+      padding:        '76px 52px 28px',
+      background:     'linear-gradient(90deg,rgba(0,0,0,.88) 0%,rgba(0,0,0,.6) 65%,transparent 100%)',
+      boxSizing:      'border-box',
+      position:       'relative',
+      maxWidth:       '58vw',
+    }}>
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        variants={container}
+        initial="hidden"
+        whileInView="show"
         viewport={vp}
-        transition={{ duration: 0.4 }}
+        style={{ display:'flex', flexDirection:'column', gap:20 }}
       >
-        <p
-          style={{
-            fontFamily: 'JetBrains Mono, monospace',
-            fontSize: '0.72rem',
-            color: 'rgba(251,191,36,0.6)',
-            letterSpacing: '0.14em',
-            marginBottom: 12,
-          }}
-        >
-          PROBLEM STATEMENT
-        </p>
-        <h2 style={{ fontSize: '2.4rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.15 }}>
-          Why existing solutions{' '}
-          <span style={{ color: '#fbbf24', textShadow: '0 0 18px rgba(251,191,36,0.35)' }}>
-            fall short
-          </span>
-        </h2>
-      </motion.div>
+        {/* Header */}
+        <motion.div variants={fadeUp}>
+          <p style={{
+            fontFamily:    'JetBrains Mono, monospace',
+            fontSize:      '0.68rem',
+            color:         'rgba(251,191,36,0.65)',
+            letterSpacing: '0.16em',
+            marginBottom:  8,
+          }}>
+            PROBLEM STATEMENT
+          </p>
+          <h2 style={{ fontSize:'clamp(1.9rem,3vw,2.5rem)', fontWeight:800, color:'#f0fdf4', lineHeight:1.15, margin:0 }}>
+            Why existing solutions{' '}
+            <span style={{ color:'#fbbf24', textShadow:'0 0 18px rgba(251,191,36,.35)' }}>
+              fall short
+            </span>
+          </h2>
+        </motion.div>
 
-      {/* Problem cards */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 760 }}>
-        {PROBLEMS.map((p, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: -32 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={vp}
-            transition={{ delay: 0.1 + i * 0.12, duration: 0.42, ease: 'easeOut' }}
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 16,
-              padding: '18px 20px',
-              borderRadius: 12,
-              background: `${p.color}08`,
-              border: `1px solid ${p.color}22`,
-              
-            }}
-          >
-            {/* Number badge */}
-            <div
+        {/* Problem cards */}
+        <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+          {PROBLEMS.map((p, i) => (
+            <motion.div
+              key={i}
+              variants={slideIn}
               style={{
+                display:    'flex',
+                alignItems: 'flex-start',
+                gap:        12,
+                padding:    '12px 16px',
+                borderRadius: 12,
+                background: `${p.color}08`,
+                border:     `1px solid ${p.color}22`,
+              }}
+            >
+              <div style={{
                 flexShrink: 0,
-                width: 28,
-                height: 28,
-                borderRadius: '50%',
+                width:      26,
+                height:     26,
+                borderRadius:'50%',
                 background: `${p.color}18`,
-                border: `1px solid ${p.color}40`,
-                display: 'flex',
+                border:     `1px solid ${p.color}40`,
+                display:    'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: 1,
-              }}
-            >
-              <AlertTriangle size={14} color={p.color} />
-            </div>
-            <p
-              style={{
-                fontSize: '0.95rem',
-                color: 'rgba(240,253,244,0.88)',
-                lineHeight: 1.6,
-              }}
-            >
-              {p.text}
-            </p>
-          </motion.div>
-        ))}
-      </div>
+                justifyContent:'center',
+                marginTop:  1,
+              }}>
+                <AlertTriangle size={13} color={p.color}/>
+              </div>
+              <p style={{ fontSize:'0.9rem', color:'rgba(240,253,244,.88)', lineHeight:1.55, margin:0 }}>
+                {p.text}
+              </p>
+            </motion.div>
+          ))}
+        </div>
 
-      {/* Impact strip */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={vp}
-        transition={{ delay: 0.65, duration: 0.4 }}
-        style={{
-          padding: '14px 22px',
-          borderRadius: 12,
-          background: 'rgba(239,68,68,0.07)',
-          border: '1px solid rgba(239,68,68,0.2)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          maxWidth: 760,
-          
-        }}
-      >
-        <span
+        {/* Impact strip */}
+        <motion.div
+          variants={fadeUp}
           style={{
-            fontSize: '0.68rem',
-            fontWeight: 700,
-            color: '#ef4444',
-            fontFamily: 'JetBrains Mono, monospace',
-            letterSpacing: '0.08em',
-            flexShrink: 0,
+            padding:    '11px 18px',
+            borderRadius: 10,
+            background: 'rgba(239,68,68,0.07)',
+            border:     '1px solid rgba(239,68,68,0.22)',
+            display:    'flex',
+            alignItems: 'center',
+            gap:        10,
           }}
         >
-          IMPACT
-        </span>
-        <span style={{ width: 1, height: 16, background: 'rgba(239,68,68,0.4)', flexShrink: 0 }} />
-        <span style={{ fontSize: '0.85rem', color: 'rgba(240,253,244,0.65)', lineHeight: 1.55 }}>
-          Unreliable recommendations for farmers and retailers — leading to crop loss and wasted treatments.
-        </span>
+          <span style={{
+            fontSize:      '0.66rem',
+            fontWeight:    700,
+            color:         '#ef4444',
+            fontFamily:    'JetBrains Mono, monospace',
+            letterSpacing: '0.08em',
+            flexShrink:    0,
+          }}>
+            IMPACT
+          </span>
+          <span style={{ width:1, height:14, background:'rgba(239,68,68,0.4)', flexShrink:0 }}/>
+          <span style={{ fontSize:'0.83rem', color:'rgba(240,253,244,0.62)', lineHeight:1.5 }}>
+            Unreliable recommendations — leading to crop loss and wasted treatments.
+          </span>
+        </motion.div>
       </motion.div>
     </div>
   )

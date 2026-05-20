@@ -1,153 +1,173 @@
 import { motion } from 'framer-motion'
 
-/*
- * Camera: y=-0.4, z=11, fov=36 → visibleHalfH = tan(18°)×11 ≈ 3.574 units
- * topPct = 50% - (worldY - (-0.4)) / 3.574 × 50%
- *
- * Plant layout (bottom→top):
- *   Root/trunk base  ≈  worldY -2.2  →  75%
- *   Lower trunk      ≈  worldY -1.2  →  61%
- *   Mid canopy       ≈  worldY -0.1  →  48%
- *   Upper canopy     ≈  worldY  1.0  →  33%
- *   Canopy tip       ≈  worldY  2.0  →  19%
- */
 const STAGES = [
-  { num: 4, label: 'Deployment',               status: 'upcoming', topPct:  6, side: 'right' },
-  { num: 3, label: 'Evaluation & Benchmarking', status: 'upcoming', topPct: 19, side: 'left'  },
-  { num: 2, label: 'Model Training',            status: 'upcoming', topPct: 36, side: 'right' },
+  { num: 4, label: 'Deployment',                               status: 'upcoming', side: 'right' },
+  { num: 3, label: 'Evaluation & Benchmarking',                status: 'upcoming', side: 'left'  },
+  { num: 2, label: 'Model Training',                           status: 'upcoming', side: 'right' },
   {
     num: 1,
     label: 'Data Collection, Cleaning & Augmentation',
     status: 'active',
-    topPct: 55,
-    leftShift: 5,
     side: 'right',
     tasks: [
-      { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'         },
-      { member: 'Abdulaziz',  task: 'Deduplication + blur detection'             },
-      { member: 'Abdulmalik', task: 'Label verification + mislabel detection'    },
-      { member: 'Musaad',     task: 'Class imbalance + augmentation + splits'    },
+      { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'       },
+      { member: 'Abdulaziz',  task: 'Deduplication + blur detection'          },
+      { member: 'Abdulmalik', task: 'Label verification + mislabel detection' },
+      { member: 'Musaad',     task: 'Class imbalance + augmentation + splits' },
     ],
   },
 ]
 
+/* vertical % positions within the track area */
+const TOP_PCTS = [8, 30, 56, 78]
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.14, delayChildren: 0.2 } },
+}
+
+const fadeSlide = (isLeft) => ({
+  hidden: { opacity: 0, x: isLeft ? -24 : 24 },
+  show:   { opacity: 1, x: 0, transition: { duration: 0.42, ease: 'easeOut' } },
+})
+
 export default function Slide05_Timeline() {
   return (
-    <div style={{ width: '100%', minHeight: '100vh', position: 'relative' }}>
+    <div style={{
+      width:      '100%',
+      height:     '100vh',
+      boxSizing:  'border-box',
+      padding:    '76px 0 24px',
+      position:   'relative',
+      overflow:   'hidden',
+    }}>
 
-      {/* ── Header ─────────────────────────────────────────────── */}
+      {/* ── Header ────────────────────────────────────────── */}
       <motion.div
-        initial={{ opacity: 0, y: -14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4 }}
-        style={{ position: 'absolute', top: 36, left: 48, zIndex: 10 }}
+        initial={{ opacity:0, y:-14 }}
+        whileInView={{ opacity:1, y:0 }}
+        viewport={{ once:true }}
+        transition={{ duration:0.4 }}
+        style={{ position:'absolute', top:82, left:48, zIndex:10 }}
       >
         <p style={{
-          fontFamily: 'JetBrains Mono, monospace',
-          fontSize: '0.66rem',
-          color: 'rgba(74,222,128,0.55)',
+          fontFamily:    'JetBrains Mono, monospace',
+          fontSize:      '0.66rem',
+          color:         'rgba(74,222,128,0.55)',
           letterSpacing: '0.14em',
-          marginBottom: 6,
+          marginBottom:  5,
         }}>
           PROJECT TIMELINE
         </p>
-        <h2 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f0fdf4', lineHeight: 1.2, margin: 0 }}>
+        <h2 style={{ fontSize:'clamp(1.5rem,2.4vw,2rem)', fontWeight:800, color:'#f0fdf4', lineHeight:1.2, margin:0 }}>
           4 Stages —{' '}
-          <span style={{ color: '#4ade80', textShadow: '0 0 20px rgba(74,222,128,0.4)' }}>
+          <span style={{ color:'#4ade80', textShadow:'0 0 20px rgba(74,222,128,.4)' }}>
             Stage 1
           </span>
           {' '}Active
         </h2>
       </motion.div>
 
-      {/* ── Spine ──────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ scaleY: 0 }}
-        whileInView={{ scaleY: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: '2%',
-          bottom: '31%',
-          width: 1,
-          background: 'linear-gradient(to bottom, transparent, rgba(74,222,128,0.22) 8%, rgba(74,222,128,0.22) 92%, transparent)',
-          transform: 'translateX(-50%)',
-          transformOrigin: 'top',
-          zIndex: 5,
-        }}
-      />
+      {/* ── Track area (below header) ─────────────────────── */}
+      <div style={{
+        position: 'absolute',
+        top:      '18%',
+        bottom:   '4%',
+        left:     0,
+        right:    0,
+      }}>
 
-      {/* ── Nodes ──────────────────────────────────────────────── */}
-      {STAGES.map((stage, idx) => {
-        const isActive = stage.status === 'active'
-        const isLeft   = stage.side === 'left'
+        {/* Spine */}
+        <motion.div
+          initial={{ scaleY:0 }}
+          whileInView={{ scaleY:1 }}
+          viewport={{ once:true }}
+          transition={{ duration:0.85, ease:'easeOut', delay:0.1 }}
+          style={{
+            position:       'absolute',
+            left:           '50%',
+            top:            0,
+            bottom:         '20%',
+            width:          1,
+            background:     'linear-gradient(to bottom,transparent,rgba(74,222,128,.22) 6%,rgba(74,222,128,.22) 94%,transparent)',
+            transform:      'translateX(-50%)',
+            transformOrigin:'top',
+            zIndex:         5,
+          }}
+        />
 
-        return (
-          <motion.div
-            key={stage.num}
-            initial={{ opacity: 0, x: isLeft ? -18 : 18 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ delay: 0.1 + idx * 0.11, duration: 0.4, ease: 'easeOut' }}
-            style={{
-              position: 'absolute',
-              top: `${stage.topPct}%`,
-              left: `${stage.leftShift || 0}%`,
-              right: 0,
-              display: 'flex',
-              alignItems: 'center',
-              transform: 'translateY(-50%)',
-              zIndex: 10,
-            }}
-          >
-            {isLeft ? (
-              /* card ← connector ← node */
-              <>
-                <div style={{ width: 'calc(50% - 24px)', display: 'flex', justifyContent: 'flex-end' }}>
-                  <StageCard stage={stage} isActive={isActive} align="right" />
-                </div>
-                <Connector isActive={isActive} />
-                <NodeDot isActive={isActive} />
-              </>
-            ) : (
-              /* node → connector → card */
-              <>
-                <div style={{ width: 'calc(50% - 24px)', flexShrink: 0 }} />
-                <NodeDot isActive={isActive} />
-                <Connector isActive={isActive} />
-                <div style={{ flex: 1 }}>
-                  <StageCard stage={stage} isActive={isActive} align="left" />
-                </div>
-              </>
-            )}
-          </motion.div>
-        )
-      })}
+        {/* Nodes */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once:true, amount:0.1 }}
+          style={{ position:'absolute', inset:0 }}
+        >
+          {STAGES.map((stage, idx) => {
+            const isActive = stage.status === 'active'
+            const isLeft   = stage.side === 'left'
+            const topPct   = TOP_PCTS[idx]
+
+            return (
+              <motion.div
+                key={stage.num}
+                variants={fadeSlide(isLeft)}
+                style={{
+                  position:   'absolute',
+                  top:        `${topPct}%`,
+                  left:       0,
+                  right:      0,
+                  display:    'flex',
+                  alignItems: 'center',
+                  transform:  'translateY(-50%)',
+                  zIndex:     10,
+                }}
+              >
+                {isLeft ? (
+                  <>
+                    <div style={{ width:'calc(50% - 20px)', display:'flex', justifyContent:'flex-end' }}>
+                      <StageCard stage={stage} isActive={isActive} align="right"/>
+                    </div>
+                    <Connector isActive={isActive}/>
+                    <NodeDot isActive={isActive}/>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ width:'calc(50% - 20px)', flexShrink:0 }}/>
+                    <NodeDot isActive={isActive}/>
+                    <Connector isActive={isActive}/>
+                    <div style={{ flex:1 }}>
+                      <StageCard stage={stage} isActive={isActive} align="left"/>
+                    </div>
+                  </>
+                )}
+              </motion.div>
+            )
+          })}
+        </motion.div>
+      </div>
     </div>
   )
 }
 
-/* ── Sub-components ─────────────────────────────────────────────── */
+/* ── Sub-components ───────────────────────────────────────────── */
 
 function NodeDot({ isActive }) {
   return (
     <motion.div
       animate={isActive ? {
-        boxShadow: ['0 0 0 0px rgba(74,222,128,0.6)', '0 0 0 16px rgba(74,222,128,0)'],
+        boxShadow: ['0 0 0 0px rgba(74,222,128,.6)', '0 0 0 14px rgba(74,222,128,0)'],
       } : {}}
-      transition={{ duration: 1.8, repeat: Infinity }}
+      transition={{ duration:1.8, repeat:Infinity }}
       style={{
-        width:        isActive ? 26 : 17,
-        height:       isActive ? 26 : 17,
+        width:        isActive ? 22 : 14,
+        height:       isActive ? 22 : 14,
         borderRadius: '50%',
-        background:   isActive ? '#4ade80' : 'rgba(74,222,128,0.12)',
-        border:       `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.5)'}`,
-        boxShadow:    isActive ? '0 0 24px rgba(74,222,128,0.9)' : '0 0 8px rgba(74,222,128,0.25)',
+        background:   isActive ? '#4ade80' : 'rgba(74,222,128,.12)',
+        border:       `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,.5)'}`,
+        boxShadow:    isActive ? '0 0 20px rgba(74,222,128,.9)' : '0 0 6px rgba(74,222,128,.25)',
         flexShrink:   0,
-        transition:   'width 0.3s, height 0.3s',
       }}
     />
   )
@@ -156,11 +176,11 @@ function NodeDot({ isActive }) {
 function Connector({ isActive }) {
   return (
     <div style={{
-      width:      24,
+      width:      20,
       height:     1,
-      background: isActive ? 'rgba(74,222,128,0.5)' : 'rgba(74,222,128,0.16)',
+      background: isActive ? 'rgba(74,222,128,.5)' : 'rgba(74,222,128,.18)',
       flexShrink: 0,
-    }} />
+    }}/>
   )
 }
 
@@ -170,63 +190,47 @@ function StageCard({ stage, isActive, align }) {
   return (
     <div style={{
       display:        'inline-block',
-      padding:        isActive ? '12px 15px' : '7px 12px',
-      borderRadius:   11,
-      background:     isActive ? 'rgba(74,222,128,0.09)' : 'rgba(255,255,255,0.04)',
-      border:         `1px solid ${isActive ? 'rgba(74,222,128,0.32)' : 'rgba(255,255,255,0.1)'}`,
+      padding:        isActive ? '10px 13px' : '6px 11px',
+      borderRadius:   10,
+      background:     isActive ? 'rgba(74,222,128,.09)' : 'rgba(255,255,255,.04)',
+      border:         `1px solid ${isActive ? 'rgba(74,222,128,.32)' : 'rgba(255,255,255,.1)'}`,
       backdropFilter: 'blur(8px)',
       textAlign:      align,
-      maxWidth:       isActive ? 310 : 260,
+      maxWidth:       isActive ? 300 : 240,
     }}>
-
-      {/* Title row */}
       <div style={{
         display:        'flex',
         alignItems:     'center',
         justifyContent: isRight ? 'flex-end' : 'flex-start',
-        gap:            7,
-        marginBottom:   isActive ? 8 : 0,
+        gap:            6,
+        marginBottom:   isActive ? 6 : 0,
         flexWrap:       'wrap',
       }}>
-        {isActive && isRight  && <ActiveBadge />}
-        <span style={{
-          fontSize:   '0.57rem',
-          fontFamily: 'JetBrains Mono, monospace',
-          color:      isActive ? 'rgba(74,222,128,0.6)' : 'rgba(255,255,255,0.28)',
-        }}>
-          {`S${stage.num}`}
+        {isActive && isRight && <ActiveBadge/>}
+        <span style={{ fontSize:'0.54rem', fontFamily:'JetBrains Mono, monospace', color: isActive ? 'rgba(74,222,128,.6)' : 'rgba(255,255,255,.28)' }}>
+          S{stage.num}
         </span>
-        <span style={{
-          fontSize:   isActive ? '0.85rem' : '0.74rem',
-          fontWeight: isActive ? 700 : 600,
-          color:      isActive ? '#f0fdf4' : 'rgba(240,253,244,0.52)',
-          lineHeight: 1.25,
-        }}>
+        <span style={{ fontSize: isActive ? '0.82rem' : '0.72rem', fontWeight: isActive ? 700 : 600, color: isActive ? '#f0fdf4' : 'rgba(240,253,244,.52)', lineHeight:1.25 }}>
           {stage.label}
         </span>
-        {isActive && !isRight && <ActiveBadge />}
+        {isActive && !isRight && <ActiveBadge/>}
       </div>
 
-      {/* Tasks — active only */}
       {isActive && stage.tasks?.map((t, ti) => (
         <div key={ti} style={{
           display:        'flex',
           alignItems:     'center',
-          gap:            7,
-          padding:        '3px 0',
-          borderTop:      `1px solid rgba(74,222,128,${ti === 0 ? '0.15' : '0.06'})`,
+          gap:            6,
+          padding:        '2px 0',
+          borderTop:      `1px solid rgba(74,222,128,${ti === 0 ? '.15' : '.06'})`,
           justifyContent: isRight ? 'flex-end' : 'flex-start',
         }}>
-          {!isRight && <Dot />}
-          <div style={{ textAlign: align }}>
-            <span style={{ fontSize: '0.66rem', color: 'rgba(240,253,244,0.76)', display: 'block', lineHeight: 1.3 }}>
-              {t.task}
-            </span>
-            <span style={{ fontSize: '0.53rem', color: 'rgba(74,222,128,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
-              {t.member}
-            </span>
+          {!isRight && <Dot/>}
+          <div style={{ textAlign:align }}>
+            <span style={{ fontSize:'0.63rem', color:'rgba(240,253,244,.76)', display:'block', lineHeight:1.3 }}>{t.task}</span>
+            <span style={{ fontSize:'0.52rem', color:'rgba(74,222,128,.5)', fontFamily:'JetBrains Mono, monospace' }}>{t.member}</span>
           </div>
-          {isRight && <Dot />}
+          {isRight && <Dot/>}
         </div>
       ))}
     </div>
@@ -236,20 +240,13 @@ function StageCard({ stage, isActive, align }) {
 function ActiveBadge() {
   return (
     <motion.span
-      animate={{ opacity: [1, 0.35, 1] }}
-      transition={{ duration: 1.6, repeat: Infinity }}
+      animate={{ opacity:[1,.35,1] }}
+      transition={{ duration:1.6, repeat:Infinity }}
       style={{
-        fontSize:      '0.52rem',
-        fontWeight:    700,
-        fontFamily:    'JetBrains Mono, monospace',
-        color:         '#4ade80',
-        background:    'rgba(74,222,128,0.12)',
-        border:        '1px solid rgba(74,222,128,0.3)',
-        borderRadius:  100,
-        padding:       '2px 7px',
-        letterSpacing: '0.1em',
-        flexShrink:    0,
-        whiteSpace:    'nowrap',
+        fontSize:'0.5rem', fontWeight:700, fontFamily:'JetBrains Mono, monospace',
+        color:'#4ade80', background:'rgba(74,222,128,.12)',
+        border:'1px solid rgba(74,222,128,.3)', borderRadius:100,
+        padding:'2px 6px', letterSpacing:'0.1em', flexShrink:0, whiteSpace:'nowrap',
       }}
     >
       IN PROGRESS
@@ -260,12 +257,9 @@ function ActiveBadge() {
 function Dot() {
   return (
     <div style={{
-      width:     4,
-      height:    4,
-      borderRadius: '50%',
-      background: '#4ade80',
-      flexShrink: 0,
-      boxShadow: '0 0 4px rgba(74,222,128,0.6)',
-    }} />
+      width:4, height:4, borderRadius:'50%',
+      background:'#4ade80', flexShrink:0,
+      boxShadow:'0 0 4px rgba(74,222,128,.6)',
+    }}/>
   )
 }
