@@ -14,14 +14,14 @@ import { motion } from 'framer-motion'
 const STAGES = [
   {
     /* topmost on screen = furthest in the future = Deployment */
-    num: 5, label: 'Deployment',                status: 'upcoming', topPct: 12, side: 'right',
+    num: 5, label: 'Deployment',                status: 'upcoming', topPct:  5, side: 'right',
   },
-  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 28, side: 'left'  },
-  { num: 3, label: 'Model Training',              status: 'upcoming', topPct: 45, side: 'right' },
-  { num: 2, label: 'Data Augmentation',           status: 'upcoming', topPct: 61, side: 'left'  },
+  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 13, side: 'left'  },
+  { num: 3, label: 'Model Training',              status: 'upcoming', topPct: 30, side: 'right' },
+  { num: 2, label: 'Data Augmentation',           status: 'upcoming', topPct: 46, side: 'left'  },
   {
     /* bottommost on screen = current stage = Data Collection (root) */
-    num: 1, label: 'Data Collection & Cleaning', status: 'active',   topPct: 76, side: 'right',
+    num: 1, label: 'Data Collection & Cleaning', status: 'active',   topPct: 61, side: 'right',
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
       { member: 'Abdulaziz',  task: 'Deduplication + blur detection'          },
@@ -70,8 +70,8 @@ export default function Slide05_Timeline() {
         style={{
           position: 'absolute',
           left: '50%',
-          top: '9%',
-          bottom: '16%',
+          top: '2%',
+          bottom: '31%',
           width: 1,
           background: 'linear-gradient(to bottom, transparent, rgba(74,222,128,0.22) 8%, rgba(74,222,128,0.22) 92%, transparent)',
           transform: 'translateX(-50%)',
