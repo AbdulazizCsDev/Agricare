@@ -16,8 +16,8 @@ export default function ParticleCanvas({ opacity = 0.5 }) {
     resize()
     window.addEventListener('resize', resize)
 
-    const COUNT    = 55
-    const MAX_DIST = 150
+    const COUNT    = 35
+    const MAX_DIST = 130
 
     const pts = Array.from({ length: COUNT }, () => ({
       x:  Math.random() * canvas.width,
@@ -94,11 +94,12 @@ export default function ParticleCanvas({ opacity = 0.5 }) {
     <canvas
       ref={canvasRef}
       style={{
-        position:      'absolute',
+        position:      'fixed',
         inset:         0,
         width:         '100%',
         height:        '100%',
         pointerEvents: 'none',
+        zIndex:        1,
         opacity,
       }}
     />

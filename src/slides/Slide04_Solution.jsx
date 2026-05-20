@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { Zap, Clock, Leaf, Database, Target, Crosshair } from 'lucide-react'
-import ParticleCanvas from '../components/ParticleCanvas'
 
 const SOLUTIONS = [
   {
@@ -58,7 +57,6 @@ export default function Slide04_Solution() {
         position: 'relative',
       }}
     >
-      <ParticleCanvas opacity={0.4} />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -102,7 +100,7 @@ export default function Slide04_Solution() {
                 borderRadius: 14,
                 background: `${s.color}08`,
                 border: `1px solid ${s.color}22`,
-                backdropFilter: 'blur(8px)',
+                
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 10,
@@ -148,7 +146,7 @@ export default function Slide04_Solution() {
             style={{
               flex: 1, padding: '14px 16px', borderRadius: 10,
               background: `${stat.color}0d`, border: `1px solid ${stat.color}28`,
-              textAlign: 'center', backdropFilter: 'blur(6px)',
+              textAlign: 'center', 
             }}
           >
             <div style={{ fontSize: '1.3rem', fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', color: stat.color, lineHeight: 1.2 }}>

@@ -71,12 +71,11 @@ export default function PlantBackground() {
 
       /* ── Renderer ─────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5))
       renderer.setClearColor(0x000000, 0)
-      renderer.shadowMap.enabled = true
-      renderer.shadowMap.type    = THREE.PCFSoftShadowMap
-      renderer.toneMapping         = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure = 2.6
+      renderer.shadowMap.enabled   = false
+      renderer.toneMapping         = THREE.LinearToneMapping
+      renderer.toneMappingExposure = 2.2
 
       /* ── Camera ───────────────────────────────────────────── */
       const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
@@ -100,8 +99,6 @@ export default function PlantBackground() {
       const topSpot = new THREE.SpotLight(0xffffff, 18, 30, Math.PI / 5.5, 0.35, 1.2)
       topSpot.position.set(plantX, 12, 2)
       topSpot.target.position.set(plantX, 0, 0)
-      topSpot.castShadow = true
-      topSpot.shadow.mapSize.setScalar(1024)
       scene.add(topSpot)
       scene.add(topSpot.target)
 
@@ -122,8 +119,8 @@ export default function PlantBackground() {
       scene.add(diseaseLight)
 
       /* ── Scan system — particle sweep ────────────────────── */
-      const LAYER_COUNT   = 18
-      const PTS_PER_LAYER = 38
+      const LAYER_COUNT   = 10
+      const PTS_PER_LAYER = 25
       const scanLayers    = []
 
       for (let l = 0; l < LAYER_COUNT; l++) {
@@ -178,7 +175,6 @@ export default function PlantBackground() {
 
         model.traverse((child) => {
           if (!child.isMesh) return
-          child.castShadow = child.receiveShadow = true
           if (child.material) {
             child.material = child.material.clone()
             child.material.envMapIntensity = 1.0

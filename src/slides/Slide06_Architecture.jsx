@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import ArchitectureDiagram from '../components/visuals/ArchitectureDiagram'
 import { Zap, Package, Clock, BarChart2 } from 'lucide-react'
-import ParticleCanvas from '../components/ParticleCanvas'
 
 const FEATURES = [
   { icon: BarChart2, label: 'Top-3 predictions', color: '#4ade80' },
@@ -25,7 +24,6 @@ export default function Slide06_Architecture() {
         position: 'relative',
       }}
     >
-      <ParticleCanvas opacity={0.4} />
       {/* Main content */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
         {/* Header */}

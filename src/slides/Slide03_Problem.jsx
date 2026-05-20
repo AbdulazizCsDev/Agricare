@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { AlertTriangle } from 'lucide-react'
-import ParticleCanvas from '../components/ParticleCanvas'
 
 const PROBLEMS = [
   {
@@ -39,7 +38,6 @@ export default function Slide03_Problem() {
         position: 'relative',
       }}
     >
-      <ParticleCanvas opacity={0.4} />
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
@@ -83,7 +81,7 @@ export default function Slide03_Problem() {
               borderRadius: 12,
               background: `${p.color}08`,
               border: `1px solid ${p.color}22`,
-              backdropFilter: 'blur(8px)',
+              
             }}
           >
             {/* Number badge */}
@@ -131,7 +129,7 @@ export default function Slide03_Problem() {
           alignItems: 'center',
           gap: 12,
           maxWidth: 760,
-          backdropFilter: 'blur(8px)',
+          
         }}
       >
         <span
