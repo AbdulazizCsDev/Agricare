@@ -335,7 +335,8 @@ export default function PlantBackground() {
           scanLight.intensity = 0
         }
 
-        renderer.render(scene, camera)
+        /* Skip render when fully faded out (architecture section) */
+        if (canOp > 0.01) renderer.render(scene, camera)
       }
       animate()
 
