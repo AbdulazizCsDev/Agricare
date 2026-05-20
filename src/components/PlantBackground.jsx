@@ -267,16 +267,11 @@ export default function PlantBackground() {
         }
         prevSecRef.current = sec
 
-        /* During reverse transition: hold arch camera so zoom-out is visible */
-        const HOLD_MS = 1500   /* ms to keep arch zoom while plant fades in */
-        const exitMs  = archExitMsRef.current
-        const isHolding = !isArch && exitMs && (performance.now() - exitMs) < HOLD_MS
-
-        /* Camera target — hold arch position during reverse transition */
-        const activeSec = (isArch || isHolding) ? 'architecture' : sec
-        const camTgt    = CAM_STATES[activeSec]
-        const cxTarget  = (isTimeline || isArch || isHolding) ? plantX : camTgt.x
-        const lkxTarget = (isTimeline || isArch || isHolding) ? plantX : camTgt.lx
+        /* During reverse: no hold — camera moves continuously back */
+        const exitMs    = archExitMsRef.current
+        const camTgt    = CAM_STATES[sec]
+        const cxTarget  = (isTimeline || isArch) ? plantX : camTgt.x
+        const lkxTarget = (isTimeline || isArch) ? plantX : camTgt.lx
 
         /* Matching lerp speed both ways */
         const lT  = 0.038
@@ -384,12 +379,14 @@ export default function PlantBackground() {
       ref={canvasRef}
       aria-hidden="true"
       style={{
-        position: 'fixed',
+        position:   'fixed',
         top: 0, left: 0,
-        width: '100%',
-        height: '100%',
+        width:      '100%',
+        height:     '100%',
         pointerEvents: 'none',
-        zIndex: 0,
+        zIndex:     0,
+        willChange: 'opacity',
+        transform:  'translateZ(0)',
       }}
     />
   )
