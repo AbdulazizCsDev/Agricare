@@ -1,14 +1,13 @@
 import { motion } from 'framer-motion'
 
 const STAGES = [
-  { num: 4, label: 'Deployment',                               status: 'upcoming', topPct: 10, side: 'right' },
-  { num: 3, label: 'Evaluation & Benchmarking',                status: 'upcoming', topPct: 28, side: 'left'  },
-  { num: 2, label: 'Model Training',                           status: 'upcoming', topPct: 50, side: 'right' },
+  { num: 3, label: 'Deployment',   status: 'upcoming', topPct: 14, side: 'right' },
+  { num: 2, label: 'Model Training', status: 'upcoming', topPct: 42, side: 'left'  },
   {
     num: 1,
     label: 'Data Collection, Cleaning & Augmentation',
     status: 'active',
-    topPct: 70,
+    topPct: 72,
     side: 'right',
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
@@ -64,7 +63,7 @@ export default function Slide05_Timeline() {
           lineHeight: 1.15,
           margin:     0,
         }}>
-          4 Stages —{' '}
+          3 Stages —{' '}
           <span style={{ color: '#4ade80', textShadow: '0 0 22px rgba(74,222,128,.45)' }}>
             Stage 1
           </span>
@@ -81,8 +80,8 @@ export default function Slide05_Timeline() {
         style={{
           position:        'absolute',
           left:            '50%',
-          top:             '16%',
-          bottom:          '22%',
+          top:             '12%',
+          bottom:          '20%',
           width:           2,
           background:      'linear-gradient(to bottom, transparent, rgba(74,222,128,.3) 6%, rgba(74,222,128,.3) 94%, transparent)',
           transform:       'translateX(-50%)',
