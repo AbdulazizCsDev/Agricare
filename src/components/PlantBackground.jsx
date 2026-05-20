@@ -5,48 +5,34 @@ import { useEffect, useRef } from 'react'
  * Plant is placed at the far right of the viewport in world space.
  * It appears naturally on the right because the camera is NOT pointing at it.
  */
-/* Camera x/lx for timeline-sN are overridden in animate() to track plantX dynamically */
+/* Camera x/lx for timeline are overridden in animate() to track plantX dynamically */
 const CAM_STATES = {
-  hero:            { x: -1.0, y: 1.0, z: 6.5, lx: -0.5, ly: 1.0, lz: 0 },
-  problem:         { x: -0.5, y: 1.8, z: 7.2, lx: -0.5, ly: 1.6, lz: 0 },
-  solution:        { x: -0.5, y: 0.6, z: 7.0, lx: -0.5, ly: 0.6, lz: 0 },
-  /* Plant center ≈ y -0.4, top ≈ y 2.7, bottom ≈ y -3.5 — camera pans top→bottom */
-  'timeline-s1':   { x:  0.0, y: 2.5, z: 8.0, lx:  0.0, ly: 2.5, lz: 0 },
-  'timeline-s2':   { x:  0.0, y: 1.4, z: 8.0, lx:  0.0, ly: 1.4, lz: 0 },
-  'timeline-s3':   { x:  0.0, y: 0.2, z: 8.0, lx:  0.0, ly: 0.2, lz: 0 },
-  'timeline-s4':   { x:  0.0, y:-0.9, z: 8.0, lx:  0.0, ly:-0.9, lz: 0 },
-  'timeline-s5':   { x:  0.0, y:-2.0, z: 8.0, lx:  0.0, ly:-2.0, lz: 0 },
-  architecture:    { x: -0.5, y: 1.4, z: 6.0, lx: -0.5, ly: 1.2, lz: 0 },
+  hero:         { x: -1.0, y: 1.0,  z:  6.5, lx: -0.5, ly: 1.0,  lz: 0 },
+  problem:      { x: -0.5, y: 1.8,  z:  7.2, lx: -0.5, ly: 1.6,  lz: 0 },
+  solution:     { x: -0.5, y: 0.6,  z:  7.0, lx: -0.5, ly: 0.6,  lz: 0 },
+  /* Full-plant view: plant center ≈ y -0.4, z=13 shows entire height */
+  timeline:     { x:  0.0, y: -0.4, z: 13.0, lx:  0.0, ly: -0.4, lz: 0 },
+  architecture: { x: -0.5, y: 1.4,  z:  6.0, lx: -0.5, ly: 1.2,  lz: 0 },
 }
 
 /* Fixed Y-rotation target per section */
 const PLANT_ROT_Y = {
-  hero:           0.00,
-  problem:        0.18,
-  solution:      -0.14,
-  'timeline-s1':  0.00,
-  'timeline-s2':  0.00,
-  'timeline-s3':  0.00,
-  'timeline-s4':  0.00,
-  'timeline-s5':  0.00,
-  architecture:  -0.08,
+  hero:          0.00,
+  problem:       0.18,
+  solution:     -0.14,
+  timeline:      0.00,
+  architecture: -0.08,
 }
-
-const TIMELINE_FX = { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5, rimI: 2.5 }
 
 const FX = {
-  hero:            { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.0 },
-  problem:         { sick: 1, scan: 0, rimR: 0.85, rimG: 0.25, rimB: 0.05, rimI: 4.0 },
-  solution:        { sick: 0, scan: 1, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.5 },
-  'timeline-s1':   TIMELINE_FX,
-  'timeline-s2':   TIMELINE_FX,
-  'timeline-s3':   TIMELINE_FX,
-  'timeline-s4':   TIMELINE_FX,
-  'timeline-s5':   TIMELINE_FX,
-  architecture:    { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
+  hero:         { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.0 },
+  problem:      { sick: 1, scan: 0, rimR: 0.85, rimG: 0.25, rimB: 0.05, rimI: 4.0 },
+  solution:     { sick: 0, scan: 1, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.5 },
+  timeline:     { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
+  architecture: { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
 }
 
-const SECTIONS = ['hero', 'problem', 'solution', 'timeline-s1', 'timeline-s2', 'timeline-s3', 'timeline-s4', 'timeline-s5', 'architecture']
+const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
 
 function lerp(a, b, t) { return a + (b - a) * t }
 function makeVal(v)     { return { v } }
@@ -263,8 +249,8 @@ export default function PlantBackground() {
         const camTgt = CAM_STATES[sec]
         const fxTgt  = FX[sec]
 
-        // For any timeline sub-section: camera centers on plant in world space
-        const isTimeline = sec.startsWith('timeline')
+        // For timeline: camera centers directly on plant
+        const isTimeline = sec === 'timeline'
         const cxTarget  = isTimeline ? plantX : camTgt.x
         const lkxTarget = isTimeline ? plantX : camTgt.lx
         const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  0.055)

@@ -23,10 +23,7 @@ export default function App() {
 
       <section id="problem"      style={sectionStyle}><Slide03_Problem /></section>
       <section id="solution"     style={sectionStyle}><Slide04_Solution /></section>
-      {/* Timeline: 5×100vh panels — overflow visible so sticky + sub-section IDs work */}
-      <section id="timeline" style={{ position: 'relative', zIndex: 1 }}>
-        <Slide05_Timeline />
-      </section>
+      <section id="timeline" style={sectionStyle}><Slide05_Timeline /></section>
       <section id="architecture" style={sectionStyle}><Slide06_Architecture /></section>
     </div>
   )
