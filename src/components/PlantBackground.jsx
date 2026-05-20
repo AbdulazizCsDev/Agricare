@@ -14,6 +14,8 @@ const CAM_STATES = {
   timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
   /* Slow close zoom on plant root area */
   architecture: { x:  0.0, y: -2.4, z:  4.2, lx:  0.0, ly: -3.2, lz: 0 },
+  /* Tech stack: deeper, wider root view */
+  techstack:    { x:  0.0, y: -2.4, z:  4.2, lx:  0.0, ly: -3.2, lz: 0 },
 }
 
 /* Fixed Y-rotation target per section */
@@ -23,6 +25,7 @@ const PLANT_ROT_Y = {
   solution:     -0.14,
   timeline:      0.00,
   architecture: -0.08,
+  techstack:    -0.08,
 }
 
 const FX = {
@@ -31,9 +34,10 @@ const FX = {
   solution:     { sick: 0, scan: 1, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.5 },
   timeline:     { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
   architecture: { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
+  techstack:    { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
 }
 
-const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
+const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture', 'techstack']
 
 function lerp(a, b, t) { return a + (b - a) * t }
 function makeVal(v)     { return { v } }
@@ -257,12 +261,17 @@ export default function PlantBackground() {
         const sec        = sectionRef.current || 'hero'
         const fxTgt      = FX[sec]
         const isArch     = sec === 'architecture'
+        const isTech     = sec === 'techstack'
+        const isRootView = isArch || isTech
         const isTimeline = sec === 'timeline'
 
-        /* Detect the exact moment we leave architecture (set once, clear on re-entry) */
-        if (isArch) {
+        /* Detect the exact moment we leave the root view (arch OR techstack) */
+        if (isRootView) {
           archExitMsRef.current = null
-        } else if (prevSecRef.current === 'architecture' && !archExitMsRef.current) {
+        } else if (
+          (prevSecRef.current === 'architecture' || prevSecRef.current === 'techstack')
+          && !archExitMsRef.current
+        ) {
           archExitMsRef.current = performance.now()
         }
         prevSecRef.current = sec
@@ -270,11 +279,11 @@ export default function PlantBackground() {
         /* During reverse: no hold — camera moves continuously back */
         const exitMs    = archExitMsRef.current
         const camTgt    = CAM_STATES[sec]
-        const cxTarget  = (isTimeline || isArch) ? plantX : camTgt.x
-        const lkxTarget = (isTimeline || isArch) ? plantX : camTgt.lx
+        const cxTarget  = (isTimeline || isRootView) ? plantX : camTgt.x
+        const lkxTarget = (isTimeline || isRootView) ? plantX : camTgt.lx
 
         /* Entry: 0.038 / Exit: 0.030 (20% slower return) */
-        const lT  = isArch ? 0.038 : 0.030
+        const lT  = isRootView ? 0.038 : 0.030
         const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  lT)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  lT)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  lT)
@@ -297,11 +306,11 @@ export default function PlantBackground() {
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
-        /* Plant opacity: fade out entering arch, delay + slow fade-in leaving */
+        /* Plant opacity: fade out entering root view, delay + slow fade-in leaving */
         const ARCH_EXIT_DELAY = 1.08
         const exitElapsed = exitMs ? (performance.now() - exitMs) / 1000 : 0
-        const canOpTarget = isArch ? 0 : (!exitMs || exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
-        const canOpSpeed  = isArch ? 0.045 : 0.008
+        const canOpTarget = isRootView ? 0 : (!exitMs || exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
+        const canOpSpeed  = isRootView ? 0.045 : 0.008
         const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
         canvas.style.opacity = canOp
 
