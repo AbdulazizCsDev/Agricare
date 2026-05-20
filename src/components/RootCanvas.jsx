@@ -9,7 +9,7 @@ export default function RootCanvas() {
     if (!el) return
     const obs = new IntersectionObserver(
       ([e]) => { visibleRef.current = e.isIntersecting },
-      { threshold: 0.15 }
+      { threshold: 0.05 }
     )
     obs.observe(el)
     return () => obs.disconnect()
@@ -101,7 +101,7 @@ export default function RootCanvas() {
       const wireMats = []
 
       const dracoLoader = new DRACOLoader()
-      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+      dracoLoader.setDecoderPath('/draco/')
       const gltfLoader = new GLTFLoader()
       gltfLoader.setDRACOLoader(dracoLoader)
 
