@@ -86,10 +86,10 @@ export default function Slide05_Timeline() {
                   borderRadius: 12,
                   background: isActive
                     ? 'rgba(74,222,128,0.09)'
-                    : 'rgba(255,255,255,0.03)',
+                    : 'rgba(255,255,255,0.04)',
                   border: `1px solid ${isActive
                     ? 'rgba(74,222,128,0.3)'
-                    : 'rgba(255,255,255,0.07)'}`,
+                    : 'rgba(255,255,255,0.12)'}`,
                   maxWidth: 340,
                   textAlign: 'right',
                   backdropFilter: 'blur(8px)',
@@ -126,7 +126,7 @@ export default function Slide05_Timeline() {
                     <span style={{
                       fontSize: '0.58rem',
                       fontFamily: 'JetBrains Mono, monospace',
-                      color: isActive ? 'rgba(74,222,128,0.55)' : 'rgba(255,255,255,0.22)',
+                      color: isActive ? 'rgba(74,222,128,0.55)' : 'rgba(255,255,255,0.38)',
                       flexShrink: 0,
                     }}>
                       {`S${stage.num}`}
@@ -134,7 +134,7 @@ export default function Slide05_Timeline() {
                     <span style={{
                       fontSize: isActive ? '0.88rem' : '0.78rem',
                       fontWeight: isActive ? 700 : 500,
-                      color: isActive ? '#f0fdf4' : 'rgba(240,253,244,0.35)',
+                      color: isActive ? '#f0fdf4' : 'rgba(240,253,244,0.58)',
                       lineHeight: 1.3,
                     }}>
                       {stage.label}
@@ -198,9 +198,9 @@ export default function Slide05_Timeline() {
                     width:  isActive ? 18 : 9,
                     height: isActive ? 18 : 9,
                     borderRadius: '50%',
-                    background: isActive ? '#4ade80' : 'transparent',
-                    border: `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.2)'}`,
-                    boxShadow: isActive ? '0 0 14px rgba(74,222,128,0.7)' : 'none',
+                    background: isActive ? '#4ade80' : 'rgba(74,222,128,0.08)',
+                    border: `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.35)'}`,
+                    boxShadow: isActive ? '0 0 14px rgba(74,222,128,0.7)' : '0 0 6px rgba(74,222,128,0.15)',
                     flexShrink: 0,
                   }}
                 />

@@ -10,11 +10,12 @@ const CAM_STATES = {
   hero:            { x: -1.0, y: 1.0, z: 6.5, lx: -0.5, ly: 1.0, lz: 0 },
   problem:         { x: -0.5, y: 1.8, z: 7.2, lx: -0.5, ly: 1.6, lz: 0 },
   solution:        { x: -0.5, y: 0.6, z: 7.0, lx: -0.5, ly: 0.6, lz: 0 },
-  'timeline-s1':   { x:  0.0, y: 4.2, z: 8.5, lx:  0.0, ly: 4.2, lz: 0 },
-  'timeline-s2':   { x:  0.0, y: 3.2, z: 8.5, lx:  0.0, ly: 3.2, lz: 0 },
-  'timeline-s3':   { x:  0.0, y: 2.2, z: 8.5, lx:  0.0, ly: 2.2, lz: 0 },
-  'timeline-s4':   { x:  0.0, y: 1.2, z: 8.5, lx:  0.0, ly: 1.2, lz: 0 },
-  'timeline-s5':   { x:  0.0, y: 0.3, z: 8.5, lx:  0.0, ly: 0.3, lz: 0 },
+  /* Plant center ≈ y -0.4, top ≈ y 2.7, bottom ≈ y -3.5 — camera pans top→bottom */
+  'timeline-s1':   { x:  0.0, y: 2.5, z: 8.0, lx:  0.0, ly: 2.5, lz: 0 },
+  'timeline-s2':   { x:  0.0, y: 1.4, z: 8.0, lx:  0.0, ly: 1.4, lz: 0 },
+  'timeline-s3':   { x:  0.0, y: 0.2, z: 8.0, lx:  0.0, ly: 0.2, lz: 0 },
+  'timeline-s4':   { x:  0.0, y:-0.9, z: 8.0, lx:  0.0, ly:-0.9, lz: 0 },
+  'timeline-s5':   { x:  0.0, y:-2.0, z: 8.0, lx:  0.0, ly:-2.0, lz: 0 },
   architecture:    { x: -0.5, y: 1.4, z: 6.0, lx: -0.5, ly: 1.2, lz: 0 },
 }
 
