@@ -273,8 +273,8 @@ export default function PlantBackground() {
         const cxTarget  = (isTimeline || isArch) ? plantX : camTgt.x
         const lkxTarget = (isTimeline || isArch) ? plantX : camTgt.lx
 
-        /* Matching lerp speed both ways */
-        const lT  = 0.038
+        /* Entry: 0.038 / Exit: 0.030 (20% slower return) */
+        const lT  = isArch ? 0.038 : 0.030
         const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  lT)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  lT)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  lT)
@@ -298,11 +298,10 @@ export default function PlantBackground() {
         camera.lookAt(lkx, lky, lkz)
 
         /* Plant opacity: fade out entering arch, delay + slow fade-in leaving */
-        const ARCH_EXIT_DELAY = 0.9
+        const ARCH_EXIT_DELAY = 1.08
         const exitElapsed = exitMs ? (performance.now() - exitMs) / 1000 : 0
-        /* Show plant normally unless: in arch OR within delay after leaving arch */
         const canOpTarget = isArch ? 0 : (!exitMs || exitElapsed > ARCH_EXIT_DELAY ? 1 : 0)
-        const canOpSpeed  = isArch ? 0.045 : 0.010
+        const canOpSpeed  = isArch ? 0.045 : 0.008
         const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
         canvas.style.opacity = canOp
 
