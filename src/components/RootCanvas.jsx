@@ -114,16 +114,20 @@ export default function RootCanvas() {
           model.scale.setScalar(scale)
           model.position.sub(center.multiplyScalar(scale))
 
+          const meshes = []
           model.traverse((child) => {
             if (!child.isMesh) return
-
             child.material = child.material.clone()
             child.material.color.setRGB(0.01, 0.055, 0.038)
             child.material.roughness         = 0.42
             child.material.metalness         = 0.38
             child.material.emissive          = new THREE.Color(0x003d22)
             child.material.emissiveIntensity = 1.8
+            meshes.push(child)
+          })
 
+          /* Add wireframes AFTER traverse to avoid infinite recursion */
+          meshes.forEach((child) => {
             const wireMat = new THREE.MeshBasicMaterial({
               color:       0x00ffaa,
               wireframe:   true,
