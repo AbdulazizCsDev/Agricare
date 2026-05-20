@@ -5,7 +5,7 @@ const STAGES = [
     num: 1,
     label: 'Data Collection & Cleaning',
     status: 'active',
-    topPct: 73,
+    topPct: 15,
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
       { member: 'Abdulaziz',  task: 'Deduplication + blur detection'          },
@@ -13,10 +13,10 @@ const STAGES = [
       { member: 'Musaad',     task: 'Class imbalance + train/val/test splits' },
     ],
   },
-  { num: 2, label: 'Data Augmentation',         status: 'upcoming', topPct: 57 },
-  { num: 3, label: 'Model Training',             status: 'upcoming', topPct: 42 },
-  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 27 },
-  { num: 5, label: 'Deployment',                 status: 'upcoming', topPct: 13 },
+  { num: 2, label: 'Data Augmentation',         status: 'upcoming', topPct: 31 },
+  { num: 3, label: 'Model Training',             status: 'upcoming', topPct: 47 },
+  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 63 },
+  { num: 5, label: 'Deployment',                 status: 'upcoming', topPct: 78 },
 ]
 
 export default function Slide05_Timeline() {
@@ -53,14 +53,14 @@ export default function Slide05_Timeline() {
         </h2>
       </motion.div>
 
-      {/* Vertical spine — centered on screen to follow plant trunk */}
+      {/* Vertical spine — top to bottom along plant trunk */}
       <div style={{
         position: 'absolute',
         left: '50%',
-        top: '10%',
-        bottom: '22%',
+        top: '12%',
+        bottom: '18%',
         width: 1,
-        background: 'linear-gradient(to bottom, transparent, rgba(74,222,128,0.22) 12%, rgba(74,222,128,0.22) 88%, transparent)',
+        background: 'linear-gradient(to bottom, rgba(74,222,128,0.22) 0%, rgba(74,222,128,0.22) 90%, transparent)',
         transform: 'translateX(-50%)',
         zIndex: 5,
       }} />

@@ -9,7 +9,7 @@ const CAM_STATES = {
   hero:         { x: -1.0, y: 1.0, z: 6.5, lx: -0.5, ly: 1.0, lz: 0 },
   problem:      { x: -0.5, y: 1.8, z: 7.2, lx: -0.5, ly: 1.6, lz: 0 },
   solution:     { x: -0.5, y: 0.6, z: 7.0, lx: -0.5, ly: 0.6, lz: 0 },
-  timeline:     { x:  0.0, y: 1.4, z: 12.0, lx:  0.0, ly: 1.4, lz: 0 }, /* x/lx overridden in animate */
+  timeline:     { x:  0.0, y: 1.6, z:  9.5, lx:  0.0, ly: 1.6, lz: 0 }, /* x/lx overridden in animate */
   architecture: { x: -0.5, y: 1.4, z: 6.0, lx: -0.5, ly: 1.2, lz: 0 },
 }
 
