@@ -2,13 +2,13 @@ import { motion } from 'framer-motion'
 
 /* All cards on the LEFT — spine runs along the tree trunk at ~50% */
 const STAGES = [
-  { num: 3, label: 'Deployment',     status: 'upcoming', topPct: 22 },
-  { num: 2, label: 'Model Training', status: 'upcoming', topPct: 44 },
+  { num: 3, label: 'Deployment',     status: 'upcoming', topPct: 12 },
+  { num: 2, label: 'Model Training', status: 'upcoming', topPct: 34 },
   {
     num: 1,
     label: 'Data Collection, Cleaning & Augmentation',
     status: 'active',
-    topPct: 62,
+    topPct: 52,
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
       { member: 'Abdulaziz',  task: 'Deduplication + blur detection'         },
@@ -91,7 +91,7 @@ export default function Slide05_Timeline() {
       <div style={{
         position:  'absolute',
         left:      '50%',
-        top:       '16%',
+        top:       '6%',
         bottom:    '5%',
         width:     4,
         transform: 'translateX(-50%)',
