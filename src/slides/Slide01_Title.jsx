@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import Logo from '../components/Logo'
-import ParticleCanvas from '../components/ParticleCanvas'
 
 export default function Slide01_Title() {
   return (
@@ -17,7 +16,6 @@ export default function Slide01_Title() {
       }}
     >
       {/* Particle layer */}
-      <ParticleCanvas />
 
       {/* Content */}
       <div

@@ -5,20 +5,22 @@ import { useEffect, useRef } from 'react'
  * Plant is placed at the far right of the viewport in world space.
  * It appears naturally on the right because the camera is NOT pointing at it.
  */
+/* Camera x/lx for timeline are overridden in animate() to track plantX dynamically */
 const CAM_STATES = {
-  hero:         { x: -1.0, y: 1.0, z: 6.5, lx: -0.5, ly: 1.0, lz: 0 },
-  problem:      { x: -0.5, y: 1.8, z: 7.2, lx: -0.5, ly: 1.6, lz: 0 },
-  solution:     { x: -0.5, y: 0.6, z: 7.0, lx: -0.5, ly: 0.6, lz: 0 },
-  timeline:     { x: -1.5, y: 1.2, z: 6.0, lx: -1.0, ly: 1.0, lz: 0 },
-  architecture: { x: -0.5, y: 1.4, z: 6.0, lx: -0.5, ly: 1.2, lz: 0 },
+  hero:         { x: -1.0, y: 1.0,  z:  6.5, lx: -0.5, ly: 1.0,  lz: 0 },
+  problem:      { x: -0.5, y: 1.8,  z:  7.2, lx: -0.5, ly: 1.6,  lz: 0 },
+  solution:     { x: -0.5, y: 0.6,  z:  7.0, lx: -0.5, ly: 0.6,  lz: 0 },
+  /* Full-plant view: plant center ≈ y -0.4, z=11 shows entire height slightly larger */
+  timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
+  architecture: { x: -0.5, y: 1.4,  z:  6.0, lx: -0.5, ly: 1.2,  lz: 0 },
 }
 
-/* Fixed Y-rotation target per section — lerped to smoothly, never resets */
+/* Fixed Y-rotation target per section */
 const PLANT_ROT_Y = {
   hero:          0.00,
   problem:       0.18,
   solution:     -0.14,
-  timeline:      0.10,
+  timeline:      0.00,
   architecture: -0.08,
 }
 
@@ -46,7 +48,7 @@ export default function PlantBackground() {
       if (!el) return
       const o = new IntersectionObserver(
         ([e]) => { if (e.isIntersecting) sectionRef.current = id },
-        { threshold: 0.3 }
+        { threshold: 0.5 }
       )
       o.observe(el)
       obs.push(o)
@@ -71,12 +73,11 @@ export default function PlantBackground() {
 
       /* ── Renderer ─────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5))
       renderer.setClearColor(0x000000, 0)
-      renderer.shadowMap.enabled = true
-      renderer.shadowMap.type    = THREE.PCFSoftShadowMap
-      renderer.toneMapping         = THREE.ACESFilmicToneMapping
-      renderer.toneMappingExposure = 2.6
+      renderer.shadowMap.enabled   = false
+      renderer.toneMapping         = THREE.LinearToneMapping
+      renderer.toneMappingExposure = 2.2
 
       /* ── Camera ───────────────────────────────────────────── */
       const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
@@ -100,8 +101,6 @@ export default function PlantBackground() {
       const topSpot = new THREE.SpotLight(0xffffff, 18, 30, Math.PI / 5.5, 0.35, 1.2)
       topSpot.position.set(plantX, 12, 2)
       topSpot.target.position.set(plantX, 0, 0)
-      topSpot.castShadow = true
-      topSpot.shadow.mapSize.setScalar(1024)
       scene.add(topSpot)
       scene.add(topSpot.target)
 
@@ -121,70 +120,37 @@ export default function PlantBackground() {
       diseaseLight.position.set(plantX, 1.5, 0.5)
       scene.add(diseaseLight)
 
-      /* ── Scan system ──────────────────────────────────────── */
-      const SCAN_W = 3.8, SCAN_D = 3.8
+      /* ── Scan system — particle sweep ────────────────────── */
+      const LAYER_COUNT   = 10
+      const PTS_PER_LAYER = 25
+      const scanLayers    = []
 
-      // Ultra-thin bright beam
-      const beamMat = new THREE.MeshBasicMaterial({
-        color: 0xccffdd, transparent: true, opacity: 0, depthWrite: false,
-      })
-      const scanBeam = new THREE.Mesh(new THREE.BoxGeometry(SCAN_W, 0.004, SCAN_D), beamMat)
-      scene.add(scanBeam)
-
-      // Echo trails (5 fading planes behind the beam)
-      const ECHO_COUNT = 5
-      const echoMats   = []
-      const echoMeshes = []
-      for (let i = 0; i < ECHO_COUNT; i++) {
-        const m = new THREE.MeshBasicMaterial({
-          color: 0x4ade80, transparent: true, opacity: 0, depthWrite: false,
+      for (let l = 0; l < LAYER_COUNT; l++) {
+        const baseY     = -1.0 + (l / (LAYER_COUNT - 1)) * 4.5
+        const positions = []
+        for (let p = 0; p < PTS_PER_LAYER; p++) {
+          const angle = Math.random() * Math.PI * 2
+          const r     = Math.sqrt(Math.random()) * 1.5
+          positions.push(
+            Math.cos(angle) * r,
+            baseY + (Math.random() - 0.5) * 0.22,
+            Math.sin(angle) * r,
+          )
+        }
+        const geo = new THREE.BufferGeometry()
+        geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+        const mat = new THREE.PointsMaterial({
+          color: 0x4ade80, size: 0.07, transparent: true, opacity: 0,
+          depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true,
         })
-        const mesh = new THREE.Mesh(new THREE.BoxGeometry(SCAN_W, 0.003, SCAN_D), m)
-        scene.add(mesh)
-        echoMats.push(m)
-        echoMeshes.push(mesh)
+        const pts = new THREE.Points(geo, mat)
+        scene.add(pts)
+        scanLayers.push({ pts, mat, baseY })
       }
 
-      // Wireframe bounding box
-      const bboxMat = new THREE.LineBasicMaterial({
-        color: 0x4ade80, transparent: true, opacity: 0,
-      })
-      const bboxLines = new THREE.LineSegments(
-        new THREE.EdgesGeometry(new THREE.BoxGeometry(SCAN_W, 4.4, SCAN_D)),
-        bboxMat,
-      )
-      scene.add(bboxLines)
-
-      // Corner brackets (front face only — 4 corners × 2 arms)
-      const CW = SCAN_W / 2, CD = SCAN_D / 2, ARM = 0.4
-      const HT = 2.2, HB = -2.2   // half-heights of bbox
-      const bracketVerts = [
-        // top-left
-        -CW, HT, CD,   -CW + ARM, HT, CD,
-        -CW, HT, CD,   -CW, HT - ARM, CD,
-        // top-right
-         CW, HT, CD,    CW - ARM, HT, CD,
-         CW, HT, CD,    CW, HT - ARM, CD,
-        // bottom-left
-        -CW, HB, CD,   -CW + ARM, HB, CD,
-        -CW, HB, CD,   -CW, HB + ARM, CD,
-        // bottom-right
-         CW, HB, CD,    CW - ARM, HB, CD,
-         CW, HB, CD,    CW, HB + ARM, CD,
-      ]
-      const bracketGeo = new THREE.BufferGeometry()
-      bracketGeo.setAttribute('position', new THREE.Float32BufferAttribute(bracketVerts, 3))
-      const bracketMat = new THREE.LineBasicMaterial({
-        color: 0xaaffc8, transparent: true, opacity: 0,
-      })
-      const brackets = new THREE.LineSegments(bracketGeo, bracketMat)
-      scene.add(brackets)
-
-      // Scan lights — tight beam light + wider diffuse
-      const scanLight  = new THREE.PointLight(0x4ade80, 0, 7)
-      const scanLight2 = new THREE.PointLight(0x4ade80, 0, 16)
+      // Light that follows the wave
+      const scanLight = new THREE.PointLight(0x4ade80, 0, 10)
       scene.add(scanLight)
-      scene.add(scanLight2)
 
       /* ── Model ────────────────────────────────────────────── */
       const draco = new DRACOLoader()
@@ -211,7 +177,6 @@ export default function PlantBackground() {
 
         model.traverse((child) => {
           if (!child.isMesh) return
-          child.castShadow = child.receiveShadow = true
           if (child.material) {
             child.material = child.material.clone()
             child.material.envMapIntensity = 1.0
@@ -237,8 +202,7 @@ export default function PlantBackground() {
         rim.position.setX(plantX - 3)
         fill.position.setX(plantX - 4)
         diseaseLight.position.setX(plantX)
-        bboxLines.position.x = plantX
-        brackets.position.x  = plantX
+        scanLayers.forEach(({ pts }) => { pts.position.x = plantX })
         if (modelReady) group.position.x = plantX
       }
 
@@ -285,10 +249,14 @@ export default function PlantBackground() {
         const camTgt = CAM_STATES[sec]
         const fxTgt  = FX[sec]
 
-        const cx  = lv.camX.v = lerp(lv.camX.v, camTgt.x,  0.055)
+        // For timeline: camera centers directly on plant
+        const isTimeline = sec === 'timeline'
+        const cxTarget  = isTimeline ? plantX : camTgt.x
+        const lkxTarget = isTimeline ? plantX : camTgt.lx
+        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  0.055)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  0.055)
-        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  camTgt.lx, 0.055)
+        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget, 0.055)
         const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly, 0.055)
         const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz, 0.055)
 
@@ -334,44 +302,28 @@ export default function PlantBackground() {
         }
 
         if (scan > 0.01) {
-          scanY += scanDir * 0.018
-          if (scanY >  2.2) { scanY =  2.2; scanDir = -1 }
-          if (scanY < -2.2) { scanY = -2.2; scanDir =  1 }
+          scanY += scanDir * 0.022
+          if (scanY >  2.5) { scanY =  2.5; scanDir = -1 }
+          if (scanY < -1.0) { scanY = -1.0; scanDir =  1 }
 
-          // Beam — subtle brightness pulse
-          const pulse = Math.sin(time * 7) * 0.06
-          scanBeam.position.set(plantX, scanY, 0)
-          beamMat.opacity = scan * (0.92 + pulse)
-
-          // Echo trails behind the beam
-          echoMeshes.forEach((mesh, i) => {
-            const offset = (i + 1) * 0.1 * -scanDir
-            mesh.position.set(plantX, scanY + offset, 0)
-            echoMats[i].opacity = scan * Math.max(0, 0.55 - i * 0.1)
+          scanLayers.forEach(({ pts, mat, baseY }) => {
+            pts.position.x = plantX
+            const dist  = Math.abs(baseY - scanY)
+            // Sharp wave flash at the sweep front
+            const wave  = Math.pow(Math.max(0, 1 - dist / 0.45), 2)
+            // Already-swept layers keep a faint sequential twinkle
+            const swept = scanDir > 0 ? baseY <= scanY : baseY >= scanY
+            const twinkle = swept
+              ? scan * 0.18 * (0.5 + 0.5 * Math.sin(time * 9 + baseY * 5.3))
+              : 0
+            mat.opacity = scan * wave * 0.95 + twinkle
           })
 
-          // Wireframe bounding box — fades in, slow pulse
-          bboxLines.position.set(plantX, 0, 0)
-          bboxMat.opacity = scan * (0.28 + Math.sin(time * 1.2) * 0.05)
-
-          // Corner brackets — brighter than box
-          brackets.position.set(plantX, 0, 0)
-          bracketMat.opacity = scan * (0.75 + Math.sin(time * 1.8) * 0.08)
-
-          // Tight beam light
-          scanLight.position.set(plantX, scanY, 0.6)
-          scanLight.intensity = scan * (3.5 + Math.sin(time * 6) * 0.6)
-
-          // Wider diffuse fill light
-          scanLight2.position.set(plantX, scanY, 0)
-          scanLight2.intensity = scan * 1.4
+          scanLight.position.set(plantX, scanY, 0.8)
+          scanLight.intensity = scan * (3.5 + Math.sin(time * 6) * 0.7)
         } else {
-          beamMat.opacity = 0
-          echoMats.forEach(m => { m.opacity = 0 })
-          bboxMat.opacity     = 0
-          bracketMat.opacity  = 0
-          scanLight.intensity  = 0
-          scanLight2.intensity = 0
+          scanLayers.forEach(({ mat }) => { mat.opacity = 0 })
+          scanLight.intensity = 0
         }
 
         renderer.render(scene, camera)
