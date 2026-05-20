@@ -1,9 +1,9 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   Database, Image, FileSpreadsheet, GitBranch,
   Brain, Flame, Zap, Activity,
   Monitor, ServerCog, Container, Rocket,
-  ChevronDown,
 } from 'lucide-react'
 
 const LAYERS = [
@@ -14,10 +14,10 @@ const LAYERS = [
     subtitle: 'Collection · Processing · Storage',
     color: '#60a5fa',
     tools: [
-      { name: 'Albumentations', role: 'Augmentation Pipeline',        Icon: GitBranch },
-      { name: 'OpenCV',         role: 'Image Processing',             Icon: Image },
-      { name: 'Pandas / NumPy', role: 'Metadata & Numerical Analysis',Icon: FileSpreadsheet },
-      { name: 'Scikit-Learn',   role: 'Stratified Splits',            Icon: Database },
+      { name: 'Albumentations', role: 'Augmentation Pipeline',         Icon: GitBranch },
+      { name: 'OpenCV',         role: 'Image Processing',              Icon: Image },
+      { name: 'Pandas / NumPy', role: 'Metadata & Numerical Analysis', Icon: FileSpreadsheet },
+      { name: 'Scikit-Learn',   role: 'Stratified Splits',             Icon: Database },
     ],
   },
   {
@@ -48,22 +48,49 @@ const LAYERS = [
   },
 ]
 
-const vp = { once: true, margin: '-40px' }
+/* Timing (seconds) ─────────────────────────────────────────── */
+const SETTLE = 2.4   // wait for roots transition to settle
+const COL    = 0.55  // gap between columns
+const TOOL   = 0.09  // gap between tools inside a column
 
 export default function Slide07_TechStack() {
+  const [animKey, setAnimKey]   = useState(0)
+  const [isVisible, setVisible] = useState(false)
+
+  useEffect(() => {
+    const section = document.getElementById('techstack')
+    if (!section) return
+    const obs = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true)
+          setAnimKey(k => k + 1)
+        } else {
+          setVisible(false)
+        }
+      },
+      { threshold: 0.4 }
+    )
+    obs.observe(section)
+    return () => obs.disconnect()
+  }, [])
+
   return (
-    <div style={{
-      width:          '100%',
-      height:         '100vh',
-      display:        'flex',
-      flexDirection:  'column',
-      alignItems:     'center',
-      justifyContent: 'center',
-      padding:        '76px 40px 28px',
-      gap:            20,
-      boxSizing:      'border-box',
-      position:       'relative',
-    }}>
+    <motion.div
+      animate={{ opacity: isVisible ? 1 : 0 }}
+      transition={{ duration: 1.0, ease: 'easeInOut' }}
+      style={{
+        width:          '100%',
+        height:         '100vh',
+        display:        'flex',
+        flexDirection:  'column',
+        alignItems:     'center',
+        justifyContent: 'center',
+        padding:        '76px 40px 28px',
+        gap:            20,
+        boxSizing:      'border-box',
+        position:       'relative',
+      }}>
       <style>{`
         @keyframes ts-pulse {
           0%,100% { opacity:.9; }
@@ -74,24 +101,14 @@ export default function Slide07_TechStack() {
           40%  { opacity:1; }
           100% { transform:translateX(200%); opacity:0; }
         }
-        @keyframes ts-dot-drop {
-          0%   { offset-distance:0%;   opacity:0; }
-          15%  { opacity:1; }
-          85%  { opacity:1; }
-          100% { offset-distance:100%; opacity:0; }
-        }
-        @keyframes ts-arrow-bob {
-          0%,100% { transform:translateY(0); }
-          50%     { transform:translateY(3px); }
-        }
       `}</style>
 
       {/* ── Header ─────────────────────────────────────────── */}
       <motion.div
+        key={`hdr-${animKey}`}
         initial={{ opacity:0, y:-20 }}
-        whileInView={{ opacity:1, y:0 }}
-        viewport={vp}
-        transition={{ duration:.45 }}
+        animate={{ opacity:1, y:0 }}
+        transition={{ duration:.7, delay: SETTLE, ease: 'easeOut' }}
         style={{ textAlign:'center', flexShrink:0 }}
       >
         <p style={{
@@ -129,11 +146,10 @@ export default function Slide07_TechStack() {
       }}>
         {LAYERS.map((layer, li) => (
           <motion.div
-            key={layer.id}
+            key={`${layer.id}-${animKey}`}
             initial={{ opacity:0, y:28, scale:.96 }}
-            whileInView={{ opacity:1, y:0, scale:1 }}
-            viewport={vp}
-            transition={{ delay: li * .12, duration:.5, ease:[.34,1.2,.64,1] }}
+            animate={{ opacity:1, y:0, scale:1 }}
+            transition={{ delay: SETTLE + 0.4 + li * COL, duration:.65, ease:[.34,1.2,.64,1] }}
             style={{
               display:              'flex',
               flexDirection:        'column',
@@ -219,11 +235,14 @@ export default function Slide07_TechStack() {
                 const Icon = tool.Icon
                 return (
                   <motion.div
-                    key={tool.name}
-                    initial={{ opacity:0, x:-12 }}
-                    whileInView={{ opacity:1, x:0 }}
-                    viewport={vp}
-                    transition={{ delay: li*.12 + ti*.07 + .22, duration:.35 }}
+                    key={`${tool.name}-${animKey}`}
+                    initial={{ opacity:0, x:-14 }}
+                    animate={{ opacity:1, x:0 }}
+                    transition={{
+                      delay: SETTLE + 0.6 + li * COL + ti * TOOL,
+                      duration: .45,
+                      ease: 'easeOut',
+                    }}
                     whileHover={{ x:4, borderColor: layer.color }}
                     style={{
                       display:    'flex',
@@ -298,10 +317,10 @@ export default function Slide07_TechStack() {
 
       {/* ── Footer ──────────────────────────────────────────── */}
       <motion.div
+        key={`ftr-${animKey}`}
         initial={{ opacity:0 }}
-        whileInView={{ opacity:1 }}
-        viewport={vp}
-        transition={{ delay:.55, duration:.4 }}
+        animate={{ opacity:1 }}
+        transition={{ delay: SETTLE + 0.6 + LAYERS.length * COL + 0.3, duration:.5 }}
         style={{
           display:    'flex',
           alignItems: 'center',
@@ -324,6 +343,6 @@ export default function Slide07_TechStack() {
         </span>
         <Zap size={12} color="#4ade80" style={{ animation:'ts-pulse 1.8s ease-in-out infinite', animationDelay:'.9s' }}/>
       </motion.div>
-    </div>
+    </motion.div>
   )
 }

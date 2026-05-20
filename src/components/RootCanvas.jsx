@@ -201,7 +201,7 @@ export default function RootCanvas() {
         const techTarget = section === 'techstack' ? 1 : 0
         techMixLerp += (techTarget - techMixLerp) * 0.04
 
-        const scaleTarget = section === 'techstack' ? 1.35 : 1
+        const scaleTarget = section === 'techstack' ? 1.55 : 1
         scaleLerp += (scaleTarget - scaleLerp) * 0.04
 
         if (opLerp < 0.02 && opTarget === 0 && !exitMsRef.current) return
@@ -244,6 +244,20 @@ export default function RootCanvas() {
             light.intensity = bell * 5.5 * breath * techFactor
           })
 
+          /* Color shift: warm amber for architecture, cool teal for techstack */
+          const archR = 0xaa / 255, archG = 0x77 / 255, archB = 0x44 / 255
+          const techR = 0x33 / 255, techG = 0xcc / 255, techB = 0xaa / 255
+          const mix = techMixLerp
+          rimA.color.setRGB(
+            archR + (techR - archR) * mix,
+            archG + (techG - archG) * mix,
+            archB + (techB - archB) * mix,
+          )
+          rimB.color.setRGB(
+            archR + (techR - archR) * mix,
+            archG + (techG - archG) * mix,
+            archB + (techB - archB) * mix,
+          )
           rimA.intensity = (3 + Math.sin(time * 0.5) * 1)   * lightScale
           rimB.intensity = (2 + Math.sin(time * 0.4) * 0.8) * lightScale
         }
