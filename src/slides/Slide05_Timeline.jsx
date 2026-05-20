@@ -1,18 +1,27 @@
 import { motion } from 'framer-motion'
 
 /*
- * Node topPct values are derived from camera math:
- * Camera y=-0.4, z=13, fov=36 → visible half-height = tan(18°)×13 ≈ 4.22 units
- * Plant spans y≈2.7 (top, 10% screen) to y≈-3.5 (bottom, 90% screen)
- * Node world-Y → screen topPct = 50% - ((worldY - (-0.4)) / 4.22) × 50%
+ * Camera: y=-0.4, z=11, fov=36 → visibleHalfH = tan(18°)×11 ≈ 3.574 units
+ * topPct = 50% - (worldY - (-0.4)) / 3.574 × 50%
+ *
+ * Plant layout (bottom→top):
+ *   Root/trunk base  ≈  worldY -2.2  →  75%
+ *   Lower trunk      ≈  worldY -1.2  →  61%
+ *   Mid canopy       ≈  worldY -0.1  →  48%
+ *   Upper canopy     ≈  worldY  1.0  →  33%
+ *   Canopy tip       ≈  worldY  2.0  →  19%
  */
 const STAGES = [
   {
-    num: 1,
-    label: 'Data Collection & Cleaning',
-    status: 'active',
-    topPct: 16,
-    side: 'left',
+    /* topmost on screen = furthest in the future = Deployment */
+    num: 5, label: 'Deployment',                status: 'upcoming', topPct: 12, side: 'right',
+  },
+  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 28, side: 'left'  },
+  { num: 3, label: 'Model Training',              status: 'upcoming', topPct: 45, side: 'right' },
+  { num: 2, label: 'Data Augmentation',           status: 'upcoming', topPct: 61, side: 'left'  },
+  {
+    /* bottommost on screen = current stage = Data Collection (root) */
+    num: 1, label: 'Data Collection & Cleaning', status: 'active',   topPct: 76, side: 'right',
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
       { member: 'Abdulaziz',  task: 'Deduplication + blur detection'          },
@@ -20,17 +29,13 @@ const STAGES = [
       { member: 'Musaad',     task: 'Class imbalance + train/val/test splits' },
     ],
   },
-  { num: 2, label: 'Data Augmentation',         status: 'upcoming', topPct: 33,  side: 'right' },
-  { num: 3, label: 'Model Training',             status: 'upcoming', topPct: 50,  side: 'left'  },
-  { num: 4, label: 'Evaluation & Benchmarking',  status: 'upcoming', topPct: 67,  side: 'right' },
-  { num: 5, label: 'Deployment',                 status: 'upcoming', topPct: 82,  side: 'left'  },
 ]
 
 export default function Slide05_Timeline() {
   return (
     <div style={{ width: '100%', minHeight: '100vh', position: 'relative' }}>
 
-      {/* ── Header top-left ─────────────────────────────────────── */}
+      {/* ── Header ─────────────────────────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -14 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -56,26 +61,26 @@ export default function Slide05_Timeline() {
         </h2>
       </motion.div>
 
-      {/* ── Vertical spine at 50% (plant trunk) ────────────────── */}
+      {/* ── Spine ──────────────────────────────────────────────── */}
       <motion.div
         initial={{ scaleY: 0 }}
         whileInView={{ scaleY: 1 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+        transition={{ duration: 0.9, ease: 'easeOut', delay: 0.1 }}
         style={{
           position: 'absolute',
           left: '50%',
-          top: '8%',
-          bottom: '12%',
+          top: '9%',
+          bottom: '16%',
           width: 1,
-          background: 'linear-gradient(to bottom, transparent, rgba(74,222,128,0.2) 10%, rgba(74,222,128,0.2) 90%, transparent)',
+          background: 'linear-gradient(to bottom, transparent, rgba(74,222,128,0.22) 8%, rgba(74,222,128,0.22) 92%, transparent)',
           transform: 'translateX(-50%)',
           transformOrigin: 'top',
           zIndex: 5,
         }}
       />
 
-      {/* ── Stage nodes ─────────────────────────────────────────── */}
+      {/* ── Nodes ──────────────────────────────────────────────── */}
       {STAGES.map((stage, idx) => {
         const isActive = stage.status === 'active'
         const isLeft   = stage.side === 'left'
@@ -83,10 +88,10 @@ export default function Slide05_Timeline() {
         return (
           <motion.div
             key={stage.num}
-            initial={{ opacity: 0, x: isLeft ? -20 : 20 }}
+            initial={{ opacity: 0, x: isLeft ? -18 : 18 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ delay: 0.15 + idx * 0.12, duration: 0.45, ease: 'easeOut' }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ delay: 0.1 + idx * 0.11, duration: 0.4, ease: 'easeOut' }}
             style={{
               position: 'absolute',
               top: `${stage.topPct}%`,
@@ -99,28 +104,21 @@ export default function Slide05_Timeline() {
             }}
           >
             {isLeft ? (
-              /* ── LEFT layout: card → connector → node ──────── */
+              /* card ← connector ← node */
               <>
-                {/* Card */}
-                <div style={{ width: 'calc(50% - 28px)', display: 'flex', justifyContent: 'flex-end', paddingRight: 0 }}>
+                <div style={{ width: 'calc(50% - 24px)', display: 'flex', justifyContent: 'flex-end' }}>
                   <StageCard stage={stage} isActive={isActive} align="right" />
                 </div>
-                {/* Connector */}
-                <div style={{ width: 28, height: 1, background: isActive ? 'rgba(74,222,128,0.5)' : 'rgba(74,222,128,0.18)', flexShrink: 0 }} />
-                {/* Node */}
+                <Connector isActive={isActive} />
                 <NodeDot isActive={isActive} />
               </>
             ) : (
-              /* ── RIGHT layout: node → connector → card ─────── */
+              /* node → connector → card */
               <>
-                {/* Spacer to push to 50% */}
-                <div style={{ width: 'calc(50% - 28px)', flexShrink: 0 }} />
-                {/* Node */}
+                <div style={{ width: 'calc(50% - 24px)', flexShrink: 0 }} />
                 <NodeDot isActive={isActive} />
-                {/* Connector */}
-                <div style={{ width: 28, height: 1, background: isActive ? 'rgba(74,222,128,0.5)' : 'rgba(74,222,128,0.18)', flexShrink: 0 }} />
-                {/* Card */}
-                <div style={{ flex: 1, paddingLeft: 0 }}>
+                <Connector isActive={isActive} />
+                <div style={{ flex: 1 }}>
                   <StageCard stage={stage} isActive={isActive} align="left" />
                 </div>
               </>
@@ -132,12 +130,13 @@ export default function Slide05_Timeline() {
   )
 }
 
-/* ── Node dot component ──────────────────────────────────────────── */
+/* ── Sub-components ─────────────────────────────────────────────── */
+
 function NodeDot({ isActive }) {
   return (
     <motion.div
       animate={isActive ? {
-        boxShadow: ['0 0 0 0px rgba(74,222,128,0.5)', '0 0 0 10px rgba(74,222,128,0)'],
+        boxShadow: ['0 0 0 0px rgba(74,222,128,0.55)', '0 0 0 10px rgba(74,222,128,0)'],
       } : {}}
       transition={{ duration: 1.8, repeat: Infinity }}
       style={{
@@ -145,53 +144,62 @@ function NodeDot({ isActive }) {
         height:       isActive ? 18 : 11,
         borderRadius: '50%',
         background:   isActive ? '#4ade80' : 'rgba(74,222,128,0.1)',
-        border:       `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.4)'}`,
-        boxShadow:    isActive
-          ? '0 0 16px rgba(74,222,128,0.8)'
-          : '0 0 6px rgba(74,222,128,0.18)',
-        flexShrink: 0,
-        transition: 'width 0.3s, height 0.3s',
+        border:       `2px solid ${isActive ? '#4ade80' : 'rgba(74,222,128,0.38)'}`,
+        boxShadow:    isActive ? '0 0 18px rgba(74,222,128,0.8)' : '0 0 5px rgba(74,222,128,0.15)',
+        flexShrink:   0,
+        transition:   'width 0.3s, height 0.3s',
       }}
     />
   )
 }
 
-/* ── Stage card component ────────────────────────────────────────── */
+function Connector({ isActive }) {
+  return (
+    <div style={{
+      width:      24,
+      height:     1,
+      background: isActive ? 'rgba(74,222,128,0.5)' : 'rgba(74,222,128,0.16)',
+      flexShrink: 0,
+    }} />
+  )
+}
+
 function StageCard({ stage, isActive, align }) {
   const isRight = align === 'right'
 
   return (
     <div style={{
-      display: 'inline-block',
-      padding: isActive ? '13px 16px' : '9px 13px',
-      borderRadius: 11,
-      background: isActive ? 'rgba(74,222,128,0.09)' : 'rgba(255,255,255,0.04)',
-      border: `1px solid ${isActive ? 'rgba(74,222,128,0.32)' : 'rgba(255,255,255,0.1)'}`,
+      display:        'inline-block',
+      padding:        isActive ? '12px 15px' : '7px 12px',
+      borderRadius:   11,
+      background:     isActive ? 'rgba(74,222,128,0.09)' : 'rgba(255,255,255,0.04)',
+      border:         `1px solid ${isActive ? 'rgba(74,222,128,0.32)' : 'rgba(255,255,255,0.1)'}`,
       backdropFilter: 'blur(8px)',
-      textAlign: align,
-      maxWidth: 300,
+      textAlign:      align,
+      maxWidth:       isActive ? 310 : 260,
     }}>
+
       {/* Title row */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
+        display:        'flex',
+        alignItems:     'center',
         justifyContent: isRight ? 'flex-end' : 'flex-start',
-        gap: 7,
-        marginBottom: isActive ? 9 : 0,
-        flexWrap: 'wrap',
+        gap:            7,
+        marginBottom:   isActive ? 8 : 0,
+        flexWrap:       'wrap',
       }}>
-        {isActive && isRight && <ActiveBadge />}
+        {isActive && isRight  && <ActiveBadge />}
         <span style={{
-          fontSize: '0.57rem',
+          fontSize:   '0.57rem',
           fontFamily: 'JetBrains Mono, monospace',
-          color: isActive ? 'rgba(74,222,128,0.6)' : 'rgba(255,255,255,0.3)',
+          color:      isActive ? 'rgba(74,222,128,0.6)' : 'rgba(255,255,255,0.28)',
         }}>
           {`S${stage.num}`}
         </span>
         <span style={{
-          fontSize: isActive ? '0.86rem' : '0.76rem',
+          fontSize:   isActive ? '0.85rem' : '0.74rem',
           fontWeight: isActive ? 700 : 600,
-          color: isActive ? '#f0fdf4' : 'rgba(240,253,244,0.55)',
+          color:      isActive ? '#f0fdf4' : 'rgba(240,253,244,0.52)',
           lineHeight: 1.25,
         }}>
           {stage.label}
@@ -199,22 +207,26 @@ function StageCard({ stage, isActive, align }) {
         {isActive && !isRight && <ActiveBadge />}
       </div>
 
-      {/* Tasks — active only, compact */}
+      {/* Tasks — active only */}
       {isActive && stage.tasks?.map((t, ti) => (
         <div key={ti} style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 7,
-          padding: '3px 0',
-          borderTop: `1px solid rgba(74,222,128,${ti === 0 ? '0.15' : '0.07'})`,
+          display:        'flex',
+          alignItems:     'center',
+          gap:            7,
+          padding:        '3px 0',
+          borderTop:      `1px solid rgba(74,222,128,${ti === 0 ? '0.15' : '0.06'})`,
           justifyContent: isRight ? 'flex-end' : 'flex-start',
         }}>
-          {!isRight && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#4ade80', flexShrink: 0, boxShadow: '0 0 4px rgba(74,222,128,0.6)' }} />}
+          {!isRight && <Dot />}
           <div style={{ textAlign: align }}>
-            <span style={{ fontSize: '0.67rem', color: 'rgba(240,253,244,0.75)', display: 'block', lineHeight: 1.3 }}>{t.task}</span>
-            <span style={{ fontSize: '0.54rem', color: 'rgba(74,222,128,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>{t.member}</span>
+            <span style={{ fontSize: '0.66rem', color: 'rgba(240,253,244,0.76)', display: 'block', lineHeight: 1.3 }}>
+              {t.task}
+            </span>
+            <span style={{ fontSize: '0.53rem', color: 'rgba(74,222,128,0.5)', fontFamily: 'JetBrains Mono, monospace' }}>
+              {t.member}
+            </span>
           </div>
-          {isRight && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#4ade80', flexShrink: 0, boxShadow: '0 0 4px rgba(74,222,128,0.6)' }} />}
+          {isRight && <Dot />}
         </div>
       ))}
     </div>
@@ -227,20 +239,33 @@ function ActiveBadge() {
       animate={{ opacity: [1, 0.35, 1] }}
       transition={{ duration: 1.6, repeat: Infinity }}
       style={{
-        fontSize: '0.52rem',
-        fontWeight: 700,
-        fontFamily: 'JetBrains Mono, monospace',
-        color: '#4ade80',
-        background: 'rgba(74,222,128,0.12)',
-        border: '1px solid rgba(74,222,128,0.3)',
-        borderRadius: 100,
-        padding: '2px 7px',
+        fontSize:      '0.52rem',
+        fontWeight:    700,
+        fontFamily:    'JetBrains Mono, monospace',
+        color:         '#4ade80',
+        background:    'rgba(74,222,128,0.12)',
+        border:        '1px solid rgba(74,222,128,0.3)',
+        borderRadius:  100,
+        padding:       '2px 7px',
         letterSpacing: '0.1em',
-        flexShrink: 0,
-        whiteSpace: 'nowrap',
+        flexShrink:    0,
+        whiteSpace:    'nowrap',
       }}
     >
       IN PROGRESS
     </motion.span>
+  )
+}
+
+function Dot() {
+  return (
+    <div style={{
+      width:     4,
+      height:    4,
+      borderRadius: '50%',
+      background: '#4ade80',
+      flexShrink: 0,
+      boxShadow: '0 0 4px rgba(74,222,128,0.6)',
+    }} />
   )
 }
