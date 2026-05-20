@@ -158,8 +158,8 @@ export default function RootCanvas() {
           const descProgress = entryMs
             ? smoothstep(Math.min(1, elapsed / DESCEND_DUR))
             : 1
-          /* Start 2.8 units above centre → descend to resting position */
-          const yOffset = 2.8 * (1 - descProgress)
+          /* Start 2.8 units BELOW centre → rise up to resting position */
+          const yOffset = -2.8 * (1 - descProgress)
 
           group.rotation.y += 0.0014
           group.rotation.x  = Math.sin(time * 0.11) * 0.03
