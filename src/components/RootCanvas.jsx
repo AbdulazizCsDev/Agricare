@@ -90,19 +90,17 @@ export default function RootCanvas() {
         return { light, speed, phase }
       })
 
-      /* Tech stack: 6 lightning pulses — faster, brighter, more chaotic */
+      /* Tech stack: 4 bioluminescent waves — slow, organic, travelling root veins */
       const techPulseDefs = [
-        { color: 0x88ffaa, speed: 1.2,  phase: 0.0 },
-        { color: 0xaaffcc, speed: 1.1,  phase: Math.PI * 0.4 },
-        { color: 0x66ddff, speed: 1.35, phase: Math.PI * 0.8 },
-        { color: 0xccffdd, speed: 1.0,  phase: Math.PI * 1.2 },
-        { color: 0x99eeff, speed: 1.5,  phase: Math.PI * 1.6 },
-        { color: 0xbbffee, speed: 1.25, phase: Math.PI * 0.2 },
+        { color: 0x66ffaa, speed: 0.28, phase: 0.0,           radius: 3.5 },
+        { color: 0x44ddcc, speed: 0.22, phase: Math.PI * 0.5,  radius: 4.0 },
+        { color: 0x88ffcc, speed: 0.32, phase: Math.PI,        radius: 3.2 },
+        { color: 0x33eebb, speed: 0.18, phase: Math.PI * 1.5,  radius: 4.5 },
       ]
-      const techPulses = techPulseDefs.map(({ color, speed, phase }) => {
-        const light = new THREE.PointLight(color, 0, 6)
+      const techPulses = techPulseDefs.map(({ color, speed, phase, radius }) => {
+        const light = new THREE.PointLight(color, 0, radius)
         scene.add(light)
-        return { light, speed, phase, flicker: Math.random() }
+        return { light, speed, phase, radius }
       })
 
       /* ── Resize ───────────────────────────────────────────── */
@@ -229,29 +227,30 @@ export default function RootCanvas() {
             light.intensity = Math.min(1, edge) * 4.5 * archFactor
           })
 
-          /* Tech stack pulses — wild lightning everywhere */
+          /* Tech stack: bioluminescent waves travel slowly up root veins */
           const techFactor = techMixLerp * lightScale
-          techPulses.forEach((p, i) => {
-            const { light, speed, phase } = p
-            const t   = ((time * speed + phase) % (Math.PI * 2)) / (Math.PI * 2)
-            const y   = -3.2 + t * 6.4
-            const x   = Math.sin(time * 0.55 + phase + i) * 1.4
-            const z   = 1.0 + Math.cos(time * 0.7 + phase) * 0.5
+          techPulses.forEach(({ light, speed, phase, radius }) => {
+            const t  = ((time * speed + phase) % (Math.PI * 2)) / (Math.PI * 2)
+            /* Smooth wave travelling bottom to top */
+            const y  = -2.8 + t * 5.6
+            /* Gentle wandering along root branches */
+            const x  = Math.sin(time * 0.18 + phase) * 0.9
+            const z  = 1.0 + Math.sin(time * 0.13 + phase * 0.7) * 0.5
             light.position.set(x, y, z)
-            const edge = Math.min(t, 1 - t) * 4
-            /* Random flicker — electricity feel */
-            const flick = 0.7 + Math.sin(time * 28 + p.flicker * 100) * 0.3
-            light.intensity = Math.min(1, edge) * 7.5 * flick * techFactor
+            /* Soft bell-curve intensity — brightest mid-travel, fades at tips */
+            const bell = Math.sin(t * Math.PI)              // 0→1→0
+            /* Slow breath on top — no flicker */
+            const breath = 0.75 + Math.sin(time * 0.6 + phase) * 0.25
+            light.intensity = bell * 5.5 * breath * techFactor
           })
 
           rimA.intensity = (3 + Math.sin(time * 0.5) * 1)   * lightScale
           rimB.intensity = (2 + Math.sin(time * 0.4) * 0.8) * lightScale
         }
 
-        /* Camera shake in techstack mode for energy feel */
-        const shake = techMixLerp * 0.04
-        camera.position.x = Math.sin(time * 0.065) * 0.8 + Math.sin(time * 18) * shake
-        camera.position.y = Math.cos(time * 0.05)  * 0.35 + Math.cos(time * 22) * shake
+        /* No camera shake — smooth drift always */
+        camera.position.x = Math.sin(time * 0.065) * 0.8
+        camera.position.y = Math.cos(time * 0.05)  * 0.35
         camera.position.z = 2.2 + Math.sin(time * 0.09) * 0.4
         camera.lookAt(
           Math.sin(time * 0.035) * 0.35,
