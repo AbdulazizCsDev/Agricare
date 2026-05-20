@@ -4,7 +4,6 @@ export default function RootCanvas() {
   const canvasRef  = useRef(null)
   const visibleRef = useRef(false)
 
-  /* Track architecture section visibility */
   useEffect(() => {
     const el = document.getElementById('architecture')
     if (!el) return
@@ -30,41 +29,60 @@ export default function RootCanvas() {
       const canvas = canvasRef.current
       if (!canvas) return
 
-      /* ── Renderer ──────────────────────────────────────────── */
+      /* ── Renderer ───────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.2))
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5))
       renderer.setClearColor(0x000000, 0)
-      renderer.toneMapping         = THREE.LinearToneMapping
+      renderer.toneMapping         = THREE.ACESFilmicToneMapping
       renderer.toneMappingExposure = 1.6
       renderer.shadowMap.enabled   = false
 
-      /* ── Camera ────────────────────────────────────────────── */
-      const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
-      camera.position.set(0, 0, 7)
+      /* ── Camera — wide FOV, positioned inside root mass ─────── */
+      const camera = new THREE.PerspectiveCamera(72, 1, 0.01, 100)
+      camera.position.set(0, 0.2, 3.8)
 
-      /* ── Scene ─────────────────────────────────────────────── */
+      /* ── Scene ──────────────────────────────────────────────── */
       const scene = new THREE.Scene()
 
-      const ambient = new THREE.AmbientLight(0x0a1a0e, 1.2)
-      scene.add(ambient)
+      /* Very dark ambient — near black organic */
+      scene.add(new THREE.AmbientLight(0x010d06, 1.2))
 
-      const rimA = new THREE.PointLight(0x4ade80, 10, 22)
-      rimA.position.set(-3, 2, 5)
+      /* Green rim — left */
+      const rimA = new THREE.PointLight(0x00ff88, 10, 20)
+      rimA.position.set(-2.5, 0.5, 3)
       scene.add(rimA)
 
-      const rimB = new THREE.PointLight(0x22d3ee, 5, 18)
-      rimB.position.set(3, -1, 4)
+      /* Cyan rim — right */
+      const rimB = new THREE.PointLight(0x00ccff, 7, 16)
+      rimB.position.set(2.5, -0.5, 3)
       scene.add(rimB)
 
-      const top = new THREE.DirectionalLight(0xffffff, 0.9)
-      top.position.set(0, 6, 4)
-      scene.add(top)
+      /* Deep violet undertone — underground feel */
+      const rimC = new THREE.PointLight(0x5500cc, 5, 12)
+      rimC.position.set(0, -3, 1)
+      scene.add(rimC)
 
-      const under = new THREE.PointLight(0x14532d, 4, 12)
-      under.position.set(0, -4, 2)
-      scene.add(under)
+      /* Top back — subtle warmth */
+      const rimD = new THREE.PointLight(0x003322, 4, 14)
+      rimD.position.set(0, 3, 0)
+      scene.add(rimD)
 
-      /* ── Resize ────────────────────────────────────────────── */
+      /* ── Electric pulse lights — simulate charge traveling ───── */
+      const PULSE_DEFS = [
+        { color: 0x00ffcc, speed: 1.9, phase: 0.00, radius: 2.0, ySpd: 0.55 },
+        { color: 0x00aaff, speed: 2.5, phase: 2.09, radius: 1.6, ySpd: 0.85 },
+        { color: 0x44ff99, speed: 1.5, phase: 4.18, radius: 2.4, ySpd: 0.48 },
+        { color: 0xffffff, speed: 3.3, phase: 1.05, radius: 0.9, ySpd: 1.40 },
+        { color: 0x00eeff, speed: 2.1, phase: 3.14, radius: 1.8, ySpd: 0.70 },
+        { color: 0x88ffcc, speed: 1.2, phase: 5.23, radius: 2.8, ySpd: 0.38 },
+      ]
+      const pulses = PULSE_DEFS.map(({ color, speed, phase, radius, ySpd }) => {
+        const light = new THREE.PointLight(color, 0, 7)
+        scene.add(light)
+        return { light, speed, phase, radius, ySpd, yPh: Math.random() * Math.PI * 2 }
+      })
+
+      /* ── Resize ─────────────────────────────────────────────── */
       const resize = () => {
         const w = canvas.clientWidth
         const h = canvas.clientHeight
@@ -80,6 +98,7 @@ export default function RootCanvas() {
       const group = new THREE.Group()
       scene.add(group)
       let modelReady = false
+      const wireMats = []
 
       const dracoLoader = new DRACOLoader()
       dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
@@ -92,55 +111,96 @@ export default function RootCanvas() {
         const box    = new THREE.Box3().setFromObject(model)
         const size   = box.getSize(new THREE.Vector3())
         const center = box.getCenter(new THREE.Vector3())
-        const scale  = 4.5 / Math.max(size.x, size.y, size.z)
+        const scale  = 5.8 / Math.max(size.x, size.y, size.z)
 
         model.scale.setScalar(scale)
         model.position.sub(center.multiplyScalar(scale))
 
-        /* Re-colour: warm brown → dark green organic */
         model.traverse((child) => {
           if (!child.isMesh) return
+
+          /* Solid material: near-black with electric teal emissive */
           child.material = child.material.clone()
-          child.material.color.setRGB(0.08, 0.38, 0.18)
-          child.material.roughness          = 0.72
-          child.material.metalness          = 0.05
-          child.material.emissive           = new THREE.Color(0x041a08)
-          child.material.emissiveIntensity  = 0.5
+          child.material.color.setRGB(0.01, 0.055, 0.038)
+          child.material.roughness         = 0.42
+          child.material.metalness         = 0.38
+          child.material.emissive          = new THREE.Color(0x003d22)
+          child.material.emissiveIntensity = 1.8
+
+          /* Wireframe child — inherits parent transform automatically */
+          const wireMat = new THREE.MeshBasicMaterial({
+            color:       0x00ffaa,
+            wireframe:   true,
+            transparent: true,
+            opacity:     0.04,
+            depthWrite:  false,
+          })
+          const wireMesh = new THREE.Mesh(child.geometry, wireMat)
+          child.add(wireMesh)
+          wireMats.push(wireMat)
         })
 
         group.add(model)
         modelReady = true
       })
 
-      /* ── Animate ───────────────────────────────────────────── */
+      /* ── Animate ────────────────────────────────────────────── */
       let raf
       let time   = 0
       let opLerp = 0
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
-        time += 0.008
+        time += 0.007
 
         /* Smooth fade in / out */
-        opLerp += ((visibleRef.current ? 1 : 0) - opLerp) * 0.04
+        opLerp += ((visibleRef.current ? 1 : 0) - opLerp) * 0.035
         canvas.style.opacity = opLerp
 
         if (modelReady) {
-          /* Slow Y orbit — "exploring roots" */
-          group.rotation.y += 0.003
-          /* Oscillating X tilt — reveals root layers */
-          group.rotation.x  = Math.sin(time * 0.28) * 0.12
-          /* Gentle float */
-          group.position.y  = Math.sin(time * 0.42) * 0.18
-          /* Pulse green rim */
-          rimA.intensity    = 10 + Math.sin(time * 0.55) * 3
-          rimB.intensity    =  5 + Math.sin(time * 0.38) * 1.5
+          /* Slow continuous Y orbit */
+          group.rotation.y += 0.0016
+          /* Subtle X sway — like underground breathing */
+          group.rotation.x  = Math.sin(time * 0.13) * 0.045
+          /* Very gentle float */
+          group.position.y  = Math.sin(time * 0.22) * 0.09
+
+          /* Wireframe electric discharge flicker */
+          wireMats.forEach((mat, i) => {
+            /* Base glow + random sharp spike on charge pulse */
+            const spike = Math.pow(Math.max(0, Math.sin(time * 5.2 + i * 0.61)), 7) * 0.30
+            mat.opacity  = 0.028 + spike
+          })
+
+          /* Pulse lights — electricity arcing through roots */
+          pulses.forEach(({ light, speed, phase, radius, ySpd, yPh }, i) => {
+            const t = time * speed + phase
+            light.position.set(
+              Math.cos(t) * radius,
+              -0.4 + Math.sin(time * ySpd + yPh) * 1.9,
+              Math.sin(t * 0.85) * radius * 0.65 + 1.8
+            )
+            /* Sharp exponential discharge burst */
+            const discharge = Math.pow(Math.abs(Math.sin(time * (1.6 + i * 0.28) + phase)), 5)
+            light.intensity  = discharge * 20
+          })
+
+          /* Main rim breathing */
+          rimA.intensity = 8  + Math.sin(time * 0.82) * 4
+          rimB.intensity = 6  + Math.sin(time * 0.63 + 1.1) * 3
+          rimC.intensity = 3  + Math.abs(Math.sin(time * 1.35)) * 3
+          rimD.intensity = 3  + Math.sin(time * 0.4) * 1.5
         }
 
-        /* Slow camera drift for depth */
-        camera.position.x = Math.sin(time * 0.12) * 0.8
-        camera.position.y = Math.cos(time * 0.09) * 0.5
-        camera.lookAt(0, 0, 0)
+        /* Camera drifts slowly — feel of floating inside the root network */
+        camera.position.x = Math.sin(time * 0.072) * 1.1
+        camera.position.y = 0.15 + Math.cos(time * 0.058) * 0.55
+        camera.position.z = 3.8 + Math.sin(time * 0.095) * 0.65
+        camera.lookAt(
+          Math.sin(time * 0.038) * 0.38,
+          Math.cos(time * 0.052) * 0.28 - 0.18,
+          0
+        )
 
         renderer.render(scene, camera)
       }
@@ -150,6 +210,7 @@ export default function RootCanvas() {
         cancelAnimationFrame(raf)
         window.removeEventListener('resize', resize)
         renderer.dispose()
+        dracoLoader.dispose()
       }
     })
 
@@ -163,8 +224,8 @@ export default function RootCanvas() {
       style={{
         position:      'fixed',
         top:           0,
-        left:          '52%',
-        width:         '48%',
+        left:          0,
+        width:         '100%',
         height:        '100%',
         pointerEvents: 'none',
         zIndex:        2,

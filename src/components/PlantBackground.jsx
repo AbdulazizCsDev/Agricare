@@ -12,7 +12,8 @@ const CAM_STATES = {
   solution:     { x: -0.5, y: 0.6,  z:  7.0, lx: -0.5, ly: 0.6,  lz: 0 },
   /* Full-plant view: plant center ≈ y -0.4, z=11 shows entire height slightly larger */
   timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
-  architecture: { x: -0.2, y: -1.6, z:  6.2, lx: -0.2, ly: -2.2, lz: 0 },
+  /* Zoom deep into plant roots — camera descends and gets very close */
+  architecture: { x:  0.0, y: -2.6, z:  3.5, lx:  0.0, ly: -3.4, lz: 0 },
 }
 
 /* Fixed Y-rotation target per section */
@@ -233,6 +234,7 @@ export default function PlantBackground() {
         rimR: makeVal(0.29), rimG: makeVal(0.87), rimB: makeVal(0.5),
         rimI: makeVal(3.0),
         rotY: makeVal(0),
+        canOp: makeVal(1),
       }
 
       /* ── Animate ──────────────────────────────────────────── */
@@ -249,10 +251,11 @@ export default function PlantBackground() {
         const camTgt = CAM_STATES[sec]
         const fxTgt  = FX[sec]
 
-        // For timeline: camera centers directly on plant
+        // Timeline & architecture: camera centers on plant (tracks plantX)
         const isTimeline = sec === 'timeline'
-        const cxTarget  = isTimeline ? plantX : camTgt.x
-        const lkxTarget = isTimeline ? plantX : camTgt.lx
+        const isArch     = sec === 'architecture'
+        const cxTarget  = (isTimeline || isArch) ? plantX : camTgt.x
+        const lkxTarget = (isTimeline || isArch) ? plantX : camTgt.lx
         const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  0.055)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  0.055)
@@ -274,6 +277,10 @@ export default function PlantBackground() {
 
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
+
+        /* Fade canvas out in architecture — RootCanvas takes over */
+        const canOp = lv.canOp.v = lerp(lv.canOp.v, isArch ? 0 : 1, 0.038)
+        canvas.style.opacity = canOp
 
         rim.color.setRGB(rR, rG, rB)
         rim.intensity = rI + Math.sin(time * 0.55) * 0.6
