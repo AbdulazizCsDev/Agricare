@@ -181,11 +181,16 @@ export default function PlantBackground() {
           if (child.material) {
             child.material = child.material.clone()
             child.material.envMapIntensity = 1.0
+            const r = child.material.color.r
+            const g = child.material.color.g
+            /* Trunk/stem: warm brownish tone (r dominant over g) */
+            const isTrunk = r > g * 1.08
             meshData.push({
-              mesh:  child,
-              origR: child.material.color.r,
-              origG: child.material.color.g,
+              mesh: child,
+              origR: r,
+              origG: g,
               origB: child.material.color.b,
+              isTrunk,
             })
           }
         })
@@ -304,11 +309,12 @@ export default function PlantBackground() {
           const breathe = 1 + Math.sin(time * 0.72) * (0.006 + scan * 0.004)
           group.scale.setScalar(breathe)
 
-          meshData.forEach(({ mesh, origR, origG, origB }) => {
-            const m = mesh.material
-            m.color.r = origR + (origR * 0.1) * sick
-            m.color.g = origG * (1 - sick * 0.45)
-            m.color.b = origB * (1 - sick * 0.85)
+          meshData.forEach(({ mesh, origR, origG, origB, isTrunk }) => {
+            const m   = mesh.material
+            const d   = isTrunk ? 0.45 : 1.0   /* darken trunk/stem */
+            m.color.r = origR * d + (origR * 0.1) * sick
+            m.color.g = origG * d * (1 - sick * 0.45)
+            m.color.b = origB * d * (1 - sick * 0.85)
           })
         }
 
