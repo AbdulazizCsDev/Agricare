@@ -12,7 +12,7 @@ const CAM_STATES = {
   solution:     { x: -0.5, y: 0.6,  z:  7.0, lx: -0.5, ly: 0.6,  lz: 0 },
   /* Full-plant view: plant center ≈ y -0.4, z=11 shows entire height slightly larger */
   timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
-  architecture: { x: -0.5, y: 1.4,  z:  6.0, lx: -0.5, ly: 1.2,  lz: 0 },
+  architecture: { x: -0.2, y: -1.6, z:  6.2, lx: -0.2, ly: -2.2, lz: 0 },
 }
 
 /* Fixed Y-rotation target per section */

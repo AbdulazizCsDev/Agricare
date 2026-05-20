@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 
 .vercel
+public/root/scene.bin
+public/root/license.txt

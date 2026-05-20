@@ -1,0 +1,11 @@
+Model Information:
+* title:	3D Corn root X Rat CT scan at resolution 113um
+* source:	https://sketchfab.com/3d-models/3d-corn-root-x-rat-ct-scan-at-resolution-113um-045eb96fb8fc4fb688ffd19709ab9b75
+* author:	nate.ellis8 (https://sketchfab.com/nate.ellis8)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "3D Corn root X Rat CT scan at resolution 113um" (https://sketchfab.com/3d-models/3d-corn-root-x-rat-ct-scan-at-resolution-113um-045eb96fb8fc4fb688ffd19709ab9b75) by nate.ellis8 (https://sketchfab.com/nate.ellis8) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

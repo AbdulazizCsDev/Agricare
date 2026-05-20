@@ -1,6 +1,7 @@
 import Navbar from './components/Navbar'
 import PlantBackground from './components/PlantBackground'
 import ParticleCanvas from './components/ParticleCanvas'
+import RootCanvas from './components/RootCanvas'
 import Slide01_Title from './slides/Slide01_Title'
 import Slide03_Problem from './slides/Slide03_Problem'
 import Slide04_Solution from './slides/Slide04_Solution'
@@ -13,8 +14,8 @@ export default function App() {
   return (
     <div style={{ background: 'transparent' }}>
       <PlantBackground />
-      {/* Single shared particle layer — one loop for the whole site */}
       <ParticleCanvas opacity={0.45} />
+      <RootCanvas />
       <Navbar />
 
       <section id="hero"   style={{ ...sectionStyle, height: '100vh' }}>
