@@ -21,7 +21,7 @@ const STAGES = [
   { num: 2, label: 'Data Augmentation',           status: 'upcoming', topPct: 46, side: 'left'  },
   {
     /* bottommost on screen = current stage = Data Collection (root) */
-    num: 1, label: 'Data Collection & Cleaning', status: 'active',   topPct: 61, side: 'right',
+    num: 1, label: 'Data Collection & Cleaning', status: 'active',   topPct: 51, leftShift: 5, side: 'right',
     tasks: [
       { member: 'Khaled',     task: 'PlantVillage + Agro-Mind datasets'      },
       { member: 'Abdulaziz',  task: 'Deduplication + blur detection'          },
@@ -95,7 +95,7 @@ export default function Slide05_Timeline() {
             style={{
               position: 'absolute',
               top: `${stage.topPct}%`,
-              left: 0,
+              left: `${stage.leftShift || 0}%`,
               right: 0,
               display: 'flex',
               alignItems: 'center',
