@@ -52,22 +52,23 @@ export default function RootCanvas() {
       const scene = new THREE.Scene()
       scene.add(new THREE.AmbientLight(0x010e06, 1.5))
 
-      const rimA = new THREE.PointLight(0x00ff88, 8, 16)
+      /* Warm natural lighting — soil / earthy tones */
+      const rimA = new THREE.PointLight(0xffcc77, 7, 16)
       rimA.position.set(-2, 0.5, 2)
       scene.add(rimA)
 
-      const rimB = new THREE.PointLight(0x00bbff, 6, 14)
+      const rimB = new THREE.PointLight(0xff9944, 5, 14)
       rimB.position.set(2, -0.5, 2)
       scene.add(rimB)
 
-      const rimC = new THREE.PointLight(0x4400bb, 5, 10)
+      const rimC = new THREE.PointLight(0x331100, 4, 10)
       rimC.position.set(0, -2, 0.5)
       scene.add(rimC)
 
       const pulseDefs = [
-        { color: 0x00ffcc, speed: 1.8, phase: 0.0,  radius: 1.3 },
-        { color: 0x00aaff, speed: 2.4, phase: 2.1,  radius: 0.9 },
-        { color: 0x44ff88, speed: 1.3, phase: 4.2,  radius: 1.6 },
+        { color: 0xffbb55, speed: 1.8, phase: 0.0,  radius: 1.3 },
+        { color: 0xff8833, speed: 2.4, phase: 2.1,  radius: 0.9 },
+        { color: 0xddaa44, speed: 1.3, phase: 4.2,  radius: 1.6 },
       ]
       const pulses = pulseDefs.map(({ color, speed, phase, radius }) => {
         const light = new THREE.PointLight(color, 0, 5)
@@ -107,12 +108,13 @@ export default function RootCanvas() {
           model.scale.setScalar(scale)
           model.position.sub(center.multiplyScalar(scale))
 
+          /* Natural root colour — warm tan/brown like actual corn roots */
           const sharedMat = new THREE.MeshStandardMaterial({
-            color:             new THREE.Color(0.01, 0.045, 0.028),
-            roughness:         0.55,
-            metalness:         0.25,
-            emissive:          new THREE.Color(0x001f10),
-            emissiveIntensity: 2.5,
+            color:             new THREE.Color(0.52, 0.34, 0.18),
+            roughness:         0.82,
+            metalness:         0.05,
+            emissive:          new THREE.Color(0x1a0800),
+            emissiveIntensity: 0.6,
           })
           model.traverse((child) => {
             if (child.isMesh) child.material = sharedMat
