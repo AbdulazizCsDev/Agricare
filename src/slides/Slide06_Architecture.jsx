@@ -1,59 +1,75 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import ArchitectureDiagram from '../components/visuals/ArchitectureDiagram'
 import { Zap, Package, Clock, BarChart2 } from 'lucide-react'
 
 const FEATURES = [
-  { icon: BarChart2, label: 'Top-3 predictions', color: '#4ade80' },
+  { icon: BarChart2, label: 'Top-3 predictions',  color: '#4ade80' },
   { icon: Zap,       label: 'Confidence scoring', color: '#fbbf24' },
-  { icon: Package,   label: 'Dockerized',          color: '#60a5fa' },
-  { icon: Clock,     label: '<200ms inference',    color: '#c084fc' },
+  { icon: Package,   label: 'Dockerized',         color: '#60a5fa' },
+  { icon: Clock,     label: '<200ms inference',   color: '#c084fc' },
 ]
 
+const TECH = ['PyTorch', 'EfficientNet-B0', 'FastAPI', 'Docker', 'Uvicorn', 'torchvision']
+
+/* Timing (seconds) ─────────────────────────────────────────── */
+const SETTLE = 1.6   // wait for camera transition to settle
+const STEP   = 0.45  // gap between each block
+
 const glass = {
-  background:    'rgba(0,0,0,0.55)',
-  border:        '1px solid rgba(74,222,128,0.12)',
-  borderRadius:  16,
-  backdropFilter:'blur(18px)',
+  background:           'rgba(0,0,0,0.55)',
+  border:               '1px solid rgba(74,222,128,0.12)',
+  borderRadius:         16,
+  backdropFilter:       'blur(18px)',
   WebkitBackdropFilter: 'blur(18px)',
 }
 
 export default function Slide06_Architecture() {
+  /* Replay sequence each time the section enters the viewport */
+  const [animKey, setAnimKey] = useState(0)
+
+  useEffect(() => {
+    const section = document.getElementById('architecture')
+    if (!section) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setAnimKey(k => k + 1) },
+      { threshold: 0.5 }
+    )
+    obs.observe(section)
+    return () => obs.disconnect()
+  }, [])
+
   return (
     <div style={{
-      width:      '100%',
-      minHeight:  '100vh',
-      display:    'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding:    '80px 48px',
-      position:   'relative',
+      width: '100%', minHeight: '100vh',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '80px 48px', position: 'relative',
     }}>
 
-      {/* ── Centered glass card — sits on top of root background ── */}
+      {/* Card frame appears right away (still empty inside until SETTLE) */}
       <motion.div
+        key={`card-${animKey}`}
         initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: SETTLE - 0.4 }}
         style={{
           ...glass,
-          width:     '100%',
-          maxWidth:  1100,
-          padding:   '52px 60px 48px',
-          display:   'flex',
-          flexDirection: 'column',
-          gap:       32,
+          width: '100%', maxWidth: 1100,
+          padding: '52px 60px 48px',
+          display: 'flex', flexDirection: 'column', gap: 32,
         }}
       >
 
         {/* Header */}
-        <div>
+        <motion.div
+          key={`hdr-${animKey}`}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, delay: SETTLE }}
+        >
           <p style={{
-            fontFamily:    'JetBrains Mono, monospace',
-            fontSize:      '0.68rem',
-            color:         'rgba(74,222,128,0.55)',
-            letterSpacing: '0.14em',
-            marginBottom:  10,
+            fontFamily: 'JetBrains Mono, monospace', fontSize: '0.68rem',
+            color: 'rgba(74,222,128,0.55)', letterSpacing: '0.14em', marginBottom: 10,
           }}>
             SYSTEM ARCHITECTURE
           </p>
@@ -67,67 +83,61 @@ export default function Slide06_Architecture() {
           <p style={{ fontSize: '0.78rem', color: 'rgba(240,253,244,0.38)', marginTop: 6 }}>
             Click any node to inspect it
           </p>
-        </div>
+        </motion.div>
 
         {/* Architecture diagram */}
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2, duration: 0.4 }}
+          key={`diag-${animKey}`}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: SETTLE + STEP }}
         >
           <ArchitectureDiagram />
         </motion.div>
 
         {/* Stack badges */}
         <motion.div
+          key={`stack-${animKey}`}
           initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.4, duration: 0.4 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: SETTLE + STEP * 2, duration: 0.35 }}
           style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
         >
-          {['PyTorch', 'EfficientNet-B0', 'FastAPI', 'Docker', 'Uvicorn', 'torchvision'].map((tech) => (
-            <span key={tech} style={{
-              fontSize:   '0.82rem',
-              fontWeight: 600,
-              fontFamily: 'JetBrains Mono, monospace',
-              color:      'rgba(74,222,128,0.85)',
-              background: 'rgba(74,222,128,0.08)',
-              border:     '1px solid rgba(74,222,128,0.22)',
-              borderRadius: 100,
-              padding:    '5px 14px',
-            }}>
+          {TECH.map((tech, i) => (
+            <motion.span
+              key={tech}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: SETTLE + STEP * 2 + i * 0.06, duration: 0.3 }}
+              style={{
+                fontSize: '0.82rem', fontWeight: 600,
+                fontFamily: 'JetBrains Mono, monospace',
+                color: 'rgba(74,222,128,0.85)',
+                background: 'rgba(74,222,128,0.08)',
+                border: '1px solid rgba(74,222,128,0.22)',
+                borderRadius: 100, padding: '5px 14px',
+              }}
+            >
               {tech}
-            </span>
+            </motion.span>
           ))}
         </motion.div>
 
         {/* Feature pills */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.55, duration: 0.4 }}
-          style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
-        >
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {FEATURES.map((f, i) => {
             const Icon = f.icon
             return (
               <motion.div
-                key={f.label}
-                initial={{ opacity: 0, y: 8 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.6 + i * 0.07, duration: 0.3 }}
+                key={`${f.label}-${animKey}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: SETTLE + STEP * 3 + i * 0.08, duration: 0.35 }}
                 style={{
-                  display:    'flex',
-                  alignItems: 'center',
-                  gap:        9,
-                  padding:    '10px 18px',
-                  borderRadius: 100,
+                  display: 'flex', alignItems: 'center', gap: 9,
+                  padding: '10px 18px', borderRadius: 100,
                   background: `${f.color}10`,
-                  border:     `1px solid ${f.color}30`,
+                  border: `1px solid ${f.color}30`,
                   backdropFilter: 'blur(8px)',
                 }}
               >
@@ -138,7 +148,7 @@ export default function Slide06_Architecture() {
               </motion.div>
             )
           })}
-        </motion.div>
+        </div>
 
       </motion.div>
     </div>

@@ -13,7 +13,7 @@ const CAM_STATES = {
   /* Full-plant view: plant center ≈ y -0.4, z=11 shows entire height slightly larger */
   timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
   /* Slow close zoom on plant root area */
-  architecture: { x:  0.0, y: -2.4, z:  4.2, lx:  0.0, ly: -3.2, lz: 0 },
+  architecture: { x:  0.0, y: -1.85, z:  4.2, lx:  0.0, ly: -2.65, lz: 0 },
   /* Tech stack: deeper, wider root view */
   techstack:    { x:  0.0, y: -2.4, z:  4.2, lx:  0.0, ly: -3.2, lz: 0 },
 }
