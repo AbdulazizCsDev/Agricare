@@ -132,8 +132,8 @@ export default function RootCanvas() {
       const smoothstep = (t) => t * t * (3 - 2 * t)
 
       /* Entry constants */
-      const ENTRY_DELAY    = 0.5   // wait for plant to fade
-      const ENTRY_FADE     = 0.7   // opacity fade-in duration
+      const ENTRY_DELAY    = 0.9   // wait for plant zoom + fade
+      const ENTRY_FADE     = 0.9   // opacity fade-in duration
       const ENTRY_RISE     = 2.2   // roots rise duration
       const ENTRY_Y_START  = -2.8  // below centre
 

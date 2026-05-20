@@ -12,8 +12,8 @@ const CAM_STATES = {
   solution:     { x: -0.5, y: 0.6,  z:  7.0, lx: -0.5, ly: 0.6,  lz: 0 },
   /* Full-plant view: plant center ≈ y -0.4, z=11 shows entire height slightly larger */
   timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
-  /* Zoom deep below the plant — fast dive into underground */
-  architecture: { x:  0.0, y: -5.5, z:  2.2, lx:  0.0, ly: -6.5, lz: 0 },
+  /* Slow close zoom on plant root area */
+  architecture: { x:  0.0, y: -2.4, z:  4.2, lx:  0.0, ly: -3.2, lz: 0 },
 }
 
 /* Fixed Y-rotation target per section */
@@ -256,8 +256,8 @@ export default function PlantBackground() {
         const isArch     = sec === 'architecture'
         const cxTarget  = (isTimeline || isArch) ? plantX : camTgt.x
         const lkxTarget = (isTimeline || isArch) ? plantX : camTgt.lx
-        /* Faster lerp when diving into architecture */
-        const lT  = isArch ? 0.09 : 0.055
+        /* Slow smooth lerp into architecture zoom */
+        const lT  = isArch ? 0.038 : 0.055
         const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  lT)
         const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  lT)
         const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  lT)
