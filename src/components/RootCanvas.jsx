@@ -1,15 +1,21 @@
 import { useEffect, useRef } from 'react'
 
 export default function RootCanvas() {
-  const canvasRef  = useRef(null)
-  const visibleRef = useRef(false)
+  const canvasRef    = useRef(null)
+  const visibleRef   = useRef(false)
+  const entryMsRef   = useRef(null)   // timestamp when architecture became visible
 
   useEffect(() => {
+    let wasVisible = false
     const check = () => {
       const el = document.getElementById('architecture')
       if (!el) return
       const { top, bottom } = el.getBoundingClientRect()
-      visibleRef.current = top < window.innerHeight * 0.9 && bottom > 0
+      const now = top < window.innerHeight * 0.9 && bottom > 0
+      if (now && !wasVisible) entryMsRef.current = performance.now()
+      if (!now)               entryMsRef.current = null
+      wasVisible = now
+      visibleRef.current = now
     }
     check()
     window.addEventListener('scroll', check, { passive: true })
@@ -30,22 +36,21 @@ export default function RootCanvas() {
       const canvas = canvasRef.current
       if (!canvas) return
 
-      /* ── Renderer — low pixel ratio for performance ─────────── */
+      /* ── Renderer ─────────────────────────────────────────── */
       const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false })
       renderer.setPixelRatio(1)
       renderer.setClearColor(0x000000, 0)
       renderer.toneMapping         = THREE.ACESFilmicToneMapping
       renderer.toneMappingExposure = 1.3
 
-      /* ── Camera ─────────────────────────────────────────────── */
+      /* ── Camera — wide, inside the roots ─────────────────── */
       const camera = new THREE.PerspectiveCamera(78, window.innerWidth / window.innerHeight, 0.01, 60)
       camera.position.set(0, 0, 2.2)
 
-      /* ── Scene ──────────────────────────────────────────────── */
+      /* ── Scene ────────────────────────────────────────────── */
       const scene = new THREE.Scene()
       scene.add(new THREE.AmbientLight(0x010e06, 1.5))
 
-      /* 3 lights only */
       const rimA = new THREE.PointLight(0x00ff88, 8, 16)
       rimA.position.set(-2, 0.5, 2)
       scene.add(rimA)
@@ -58,7 +63,6 @@ export default function RootCanvas() {
       rimC.position.set(0, -2, 0.5)
       scene.add(rimC)
 
-      /* 3 pulse lights only */
       const pulseDefs = [
         { color: 0x00ffcc, speed: 1.8, phase: 0.0,  radius: 1.3 },
         { color: 0x00aaff, speed: 2.4, phase: 2.1,  radius: 0.9 },
@@ -70,7 +74,7 @@ export default function RootCanvas() {
         return { light, speed, phase, radius, yPh: Math.random() * Math.PI * 2 }
       })
 
-      /* ── Resize ─────────────────────────────────────────────── */
+      /* ── Resize ───────────────────────────────────────────── */
       const resize = () => {
         renderer.setSize(window.innerWidth, window.innerHeight)
         camera.aspect = window.innerWidth / window.innerHeight
@@ -79,7 +83,7 @@ export default function RootCanvas() {
       resize()
       window.addEventListener('resize', resize)
 
-      /* ── Load model ─────────────────────────────────────────── */
+      /* ── Load model ───────────────────────────────────────── */
       const group = new THREE.Group()
       scene.add(group)
       let modelReady = false
@@ -102,7 +106,6 @@ export default function RootCanvas() {
           model.scale.setScalar(scale)
           model.position.sub(center.multiplyScalar(scale))
 
-          /* Single material pass — no cloning per mesh, share one material */
           const sharedMat = new THREE.MeshStandardMaterial({
             color:             new THREE.Color(0.01, 0.045, 0.028),
             roughness:         0.55,
@@ -121,26 +124,46 @@ export default function RootCanvas() {
         (err) => console.error('[RootCanvas] load error:', err)
       )
 
-      /* ── Animate ────────────────────────────────────────────── */
+      /* ── Animate ──────────────────────────────────────────── */
       let raf
       let time   = 0
       let opLerp = 0
+      /* Smoothstep: eased 0→1 */
+      const smoothstep = (t) => t * t * (3 - 2 * t)
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
 
-        opLerp += ((visibleRef.current ? 1 : 0) - opLerp) * 0.04
+        const nowMs   = performance.now()
+        const entryMs = entryMsRef.current
+        const elapsed = entryMs ? (nowMs - entryMs) / 1000 : 0  // seconds since visible
+
+        /* ── Opacity: wait 1.1s (plant fade out), then reveal over 0.8s ── */
+        const DELAY   = 1.1
+        const FADE_IN = 0.8
+        const opTarget = visibleRef.current
+          ? (elapsed < DELAY ? 0 : Math.min(1, (elapsed - DELAY) / FADE_IN))
+          : 0
+        opLerp += (opTarget - opLerp) * 0.055
         canvas.style.opacity = opLerp
 
         /* Skip heavy work when invisible */
-        if (opLerp < 0.02) return
+        if (opLerp < 0.02 && opTarget === 0) return
 
         time += 0.006
 
         if (modelReady) {
+          /* ── Descend: roots enter from top, settle over 2.2s ─────────── */
+          const DESCEND_DUR = 2.2
+          const descProgress = entryMs
+            ? smoothstep(Math.min(1, elapsed / DESCEND_DUR))
+            : 1
+          /* Start 2.8 units above centre → descend to resting position */
+          const yOffset = 2.8 * (1 - descProgress)
+
           group.rotation.y += 0.0014
           group.rotation.x  = Math.sin(time * 0.11) * 0.03
-          group.position.y  = Math.sin(time * 0.18) * 0.07
+          group.position.y  = yOffset + Math.sin(time * 0.18) * 0.07
 
           pulses.forEach(({ light, speed, phase, radius, yPh }, i) => {
             const t = time * speed + phase
@@ -149,14 +172,17 @@ export default function RootCanvas() {
               -0.2 + Math.sin(time * 0.6 + yPh) * 1.4,
               Math.sin(t * 0.9) * radius * 0.7 + 1.0
             )
-            light.intensity = Math.pow(Math.abs(Math.sin(time * (1.6 + i * 0.3) + phase)), 5) * 14
+            /* Pulses only kick in after reveal starts */
+            const revealFactor = Math.min(1, Math.max(0, elapsed - DELAY) / FADE_IN)
+            light.intensity = Math.pow(Math.abs(Math.sin(time * (1.6 + i * 0.3) + phase)), 5) * 14 * revealFactor
           })
 
-          rimA.intensity = 6 + Math.sin(time * 0.8) * 2.5
-          rimB.intensity = 4 + Math.sin(time * 0.6 + 1.1) * 2
-          rimC.intensity = 3 + Math.abs(Math.sin(time * 1.3)) * 2
+          rimA.intensity = (6 + Math.sin(time * 0.8)  * 2.5) * Math.min(1, opLerp * 1.5)
+          rimB.intensity = (4 + Math.sin(time * 0.6 + 1.1) * 2) * Math.min(1, opLerp * 1.5)
+          rimC.intensity = (3 + Math.abs(Math.sin(time * 1.3)) * 2) * Math.min(1, opLerp * 1.5)
         }
 
+        /* Camera drifts slowly inside the root network */
         camera.position.x = Math.sin(time * 0.065) * 0.8
         camera.position.y = Math.cos(time * 0.05)  * 0.35
         camera.position.z = 2.2 + Math.sin(time * 0.09) * 0.4
