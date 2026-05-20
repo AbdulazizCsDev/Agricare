@@ -13,7 +13,7 @@ const FEATURES = [
 const TECH = ['PyTorch', 'EfficientNet-B0', 'FastAPI', 'Docker', 'Uvicorn', 'torchvision']
 
 /* Timing (seconds) ─────────────────────────────────────────── */
-const SETTLE = 2.6   // wait for camera transition (slow root zoom) to settle
+const SETTLE = 2.8   // wait for camera transition + roots fade-in to settle
 const STEP   = 0.75  // slow, deliberate gap between each block
 
 const glass = {

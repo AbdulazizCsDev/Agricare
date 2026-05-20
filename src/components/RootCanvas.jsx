@@ -163,7 +163,7 @@ export default function RootCanvas() {
       let techMixLerp = 0   // 0 = arch, 1 = techstack
       const smoothstep = (t) => t * t * (3 - 2 * t)
 
-      const ENTRY_DELAY    = 0.9
+      const ENTRY_DELAY    = 1.08
       const ENTRY_FADE     = 0.9
       const ENTRY_RISE     = 2.2
       const ENTRY_Y_START  = -2.8
