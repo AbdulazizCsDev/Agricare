@@ -287,7 +287,7 @@ export default function PlantBackground() {
 
         /* Fade out fast when entering arch, fade in slow when leaving */
         const canOpTarget = isArch ? 0 : 1
-        const canOpSpeed  = isArch ? 0.045 : 0.032
+        const canOpSpeed  = isArch ? 0.045 : 0.010
         const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
         canvas.style.opacity = canOp
 
