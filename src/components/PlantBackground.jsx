@@ -283,12 +283,21 @@ export default function PlantBackground() {
 
         /* Smoother entries: slower lerp into root view */
         const lT  = isRootView ? 0.020 : 0.030
-        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  lT)
-        const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  lT)
-        const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  lT)
-        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget, lT)
-        const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly, lT)
-        const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz, lT)
+
+        /* During the root-view rise, dolly extra-close toward the rising
+           trunk base (zoom-on-bottom) then settle back to the final cam target.
+           Boost peaks mid-transition (sin curve), 0 at start and end. */
+        const pYProgress  = isRootView ? Math.min(1, lv.pY.v / 8.5) : 0
+        const transitArc  = Math.sin(pYProgress * Math.PI)   // 0 → 1 → 0
+        const czBoost     = -transitArc * 1.1                // up to 1.1u closer
+        const lkyBoost    = -transitArc * 0.7                // look 0.7u lower
+
+        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,            lT)
+        const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,            lT)
+        const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z + czBoost,  lT)
+        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget,           lT)
+        const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly + lkyBoost,lT)
+        const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz,           lT)
 
         const sick = lv.sick.v = lerp(lv.sick.v, fxTgt.sick, 0.035)
         const scan = lv.scan.v = lerp(lv.scan.v, fxTgt.scan, 0.035)
@@ -305,12 +314,18 @@ export default function PlantBackground() {
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
-        /* Plant rises off-screen (upward) for root views instead of fading in place.
-           The canvas itself stays at full opacity — the visual exit is the lift. */
+        /* Root-view exit:
+           - Plant rises off-screen upward (pY)
+           - Camera dollies closer toward the trunk base (camZoom)
+           - Canvas opacity fades smoothly so the lift dissolves into nothing */
         const pYTarget = isRootView ? 8.5 : 0
         const pYSpeed  = isRootView ? 0.020 : 0.024
         const pY = lv.pY.v = lerp(lv.pY.v, pYTarget, pYSpeed)
-        canvas.style.opacity = 1
+
+        const canOpTarget = isRootView ? 0 : 1
+        const canOpSpeed  = isRootView ? 0.016 : 0.018
+        const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
+        canvas.style.opacity = canOp
 
         rim.color.setRGB(rR, rG, rB)
         rim.intensity = rI + Math.sin(time * 0.55) * 0.6
