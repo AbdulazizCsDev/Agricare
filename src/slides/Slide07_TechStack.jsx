@@ -69,7 +69,7 @@ export default function Slide07_TechStack() {
           setVisible(false)
         }
       },
-      { threshold: 0.4 }
+      { threshold: 0.25 }
     )
     obs.observe(section)
     return () => obs.disconnect()
@@ -80,16 +80,15 @@ export default function Slide07_TechStack() {
       animate={{ opacity: isVisible ? 1 : 0 }}
       transition={{ duration: 1.0, ease: 'easeInOut' }}
       style={{
-        width:          '100%',
-        height:         '100vh',
-        display:        'flex',
-        flexDirection:  'column',
-        alignItems:     'center',
-        justifyContent: 'center',
-        padding:        '76px 40px 28px',
-        gap:            20,
-        boxSizing:      'border-box',
-        position:       'relative',
+        width:         '100%',
+        minHeight:     '100vh',
+        display:       'flex',
+        flexDirection: 'column',
+        alignItems:    'center',
+        padding:       '68px 40px 22px',
+        gap:           14,
+        boxSizing:     'border-box',
+        position:      'relative',
       }}>
       <style>{`
         @keyframes ts-pulse {
@@ -140,9 +139,7 @@ export default function Slide07_TechStack() {
         maxWidth:            1200,
         display:             'grid',
         gridTemplateColumns: 'repeat(3,1fr)',
-        gap:                 16,
-        flex:                1,
-        minHeight:           0,
+        gap:                 14,
       }}>
         {LAYERS.map((layer, li) => (
           <motion.div
@@ -158,7 +155,7 @@ export default function Slide07_TechStack() {
               border:               `1px solid ${layer.color}28`,
               borderTop:            `2px solid ${layer.color}`,
               borderRadius:         16,
-              padding:              '18px 18px 16px',
+              padding:              '14px 16px 14px',
               backdropFilter:       'blur(22px)',
               WebkitBackdropFilter: 'blur(22px)',
               boxShadow:            `0 8px 32px ${layer.color}12`,
@@ -248,7 +245,7 @@ export default function Slide07_TechStack() {
                       display:    'flex',
                       alignItems: 'center',
                       gap:        10,
-                      padding:    '10px 12px',
+                      padding:    '8px 11px',
                       borderRadius: 10,
                       background: `linear-gradient(120deg,rgba(0,0,0,.45),${layer.color}07)`,
                       border:     `1px solid ${layer.color}1e`,

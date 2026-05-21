@@ -13,18 +13,23 @@ export default function RootCanvas() {
     const check = () => {
       const arch = document.getElementById('architecture')
       const tech = document.getElementById('techstack')
-      let now = false
-      let current = null
+      const vh   = window.innerHeight
 
+      /* Pick the section with the largest visible area (not the first match).
+         Ensures clicking "Tech Stack" in the navbar swaps modes immediately,
+         even if architecture still has a few pixels showing at the very top. */
+      let current = null
+      let bestVisible = 0
       for (const [id, el] of [['architecture', arch], ['techstack', tech]]) {
         if (!el) continue
         const { top, bottom } = el.getBoundingClientRect()
-        if (top < window.innerHeight * 0.9 && bottom > 0) {
-          now = true
-          current = id
-          break
+        const visible = Math.max(0, Math.min(vh, bottom) - Math.max(0, top))
+        if (visible > bestVisible) {
+          bestVisible = visible
+          current     = id
         }
       }
+      const now = current !== null && bestVisible > vh * 0.25
 
       if (now && !wasVisible) { entryMsRef.current = performance.now(); exitMsRef.current = null }
       if (!now && wasVisible) { exitMsRef.current  = performance.now(); entryMsRef.current = null }
