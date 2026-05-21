@@ -65,22 +65,35 @@ export default function Logo({ size = 'md', animated = true }) {
         filter={`url(#leafGlow-${size})`}
       />
 
-      {/* Neural vein lines */}
-      <line x1="38" y1="68" x2="38" y2="40" stroke={`url(#veinGrad-${size})`} strokeWidth="0.9" />
-      <line x1="38" y1="40" x2="26" y2="26" stroke={`url(#veinGrad-${size})`} strokeWidth="0.9" />
-      <line x1="38" y1="40" x2="50" y2="26" stroke={`url(#veinGrad-${size})`} strokeWidth="0.9" />
-      <line x1="26" y1="26" x2="38" y2="14" stroke={`url(#veinGrad-${size})`} strokeWidth="0.9" opacity="0.7" />
-      <line x1="50" y1="26" x2="38" y2="14" stroke={`url(#veinGrad-${size})`} strokeWidth="0.9" opacity="0.7" />
+      {/* Stem */}
+      <line x1="38" y1="68" x2="38" y2="40" stroke={`url(#veinGrad-${size})`} strokeWidth="1.1" />
+
+      {/* Left petal (closed curve from central → side tip → back) */}
+      <path
+        d="M 38 40 C 26 38 16 30 22 22 C 30 18 36 28 38 40 Z"
+        fill="#4ade80"
+        fillOpacity="0.18"
+        stroke={`url(#veinGrad-${size})`}
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
+
+      {/* Right petal */}
+      <path
+        d="M 38 40 C 50 38 60 30 54 22 C 46 18 40 28 38 40 Z"
+        fill="#4ade80"
+        fillOpacity="0.18"
+        stroke={`url(#veinGrad-${size})`}
+        strokeWidth="1.1"
+        strokeLinejoin="round"
+      />
 
       {/* Outer node (bottom) */}
       <circle cx="38" cy="68" r="2" fill="#4ade80" opacity="0.6" filter={`url(#nodeGlow-${size})`} />
 
-      {/* Branch nodes */}
-      <circle cx="26" cy="26" r="2.5" fill="#4ade80" opacity="0.8" filter={`url(#nodeGlow-${size})`} />
-      <circle cx="50" cy="26" r="2.5" fill="#4ade80" opacity="0.8" filter={`url(#nodeGlow-${size})`} />
-
-      {/* Tip node */}
-      <circle cx="38" cy="14" r="3" fill="#86efac" filter={`url(#nodeGlow-${size})`} />
+      {/* Petal tip nodes */}
+      <circle cx="22" cy="22" r="2.5" fill="#4ade80" opacity="0.85" filter={`url(#nodeGlow-${size})`} />
+      <circle cx="54" cy="22" r="2.5" fill="#4ade80" opacity="0.85" filter={`url(#nodeGlow-${size})`} />
 
       {/* Central node — animated pulse */}
       {animated ? (
