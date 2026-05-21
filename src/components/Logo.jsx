@@ -66,7 +66,7 @@ export default function Logo({ size = 'md', animated = true }) {
       />
 
       {/* Stem */}
-      <line x1="38" y1="68" x2="38" y2="40" stroke={`url(#veinGrad-${size})`} strokeWidth="1.1" />
+      <line x1="38" y1="68" x2="38" y2="40" stroke="#4ade80" strokeWidth="1.3" strokeOpacity="0.75" />
 
       {/* Left branch */}
       <line x1="38" y1="40" x2="26" y2="26" stroke={`url(#veinGrad-${size})`} strokeWidth="1.1" />
