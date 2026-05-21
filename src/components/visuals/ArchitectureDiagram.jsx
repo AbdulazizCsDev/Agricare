@@ -83,10 +83,10 @@ export default function ArchitectureDiagram() {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 8,
-                  padding: '16px 12px',
-                  width: 105,
-                  borderRadius: 12,
+                  gap: 10,
+                  padding: '20px 16px',
+                  width: 130,
+                  borderRadius: 14,
                   background: isSelected
                     ? `rgba(${node.color === '#4ade80' ? '74,222,128' : '255,255,255'},0.08)`
                     : 'rgba(255,255,255,0.03)',
@@ -103,8 +103,8 @@ export default function ArchitectureDiagram() {
               >
                 <div
                   style={{
-                    width: 44,
-                    height: 44,
+                    width: 56,
+                    height: 56,
                     borderRadius: '50%',
                     background: `${node.color}15`,
                     border: `1px solid ${node.color}40`,
@@ -114,18 +114,18 @@ export default function ArchitectureDiagram() {
                     color: node.color,
                   }}
                 >
-                  <Icon size={20} />
+                  <Icon size={26} />
                 </div>
                 <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#f0fdf4', lineHeight: 1.3 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#f0fdf4', lineHeight: 1.3 }}>
                     {node.label}
                   </div>
                   <div
                     style={{
-                      fontSize: '0.6rem',
+                      fontSize: '0.72rem',
                       color: node.color,
                       fontFamily: 'JetBrains Mono, monospace',
-                      marginTop: 2,
+                      marginTop: 3,
                     }}
                   >
                     {node.sublabel}

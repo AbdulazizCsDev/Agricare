@@ -1,19 +1,50 @@
 import { useEffect, useRef } from 'react'
 
 export default function RootCanvas() {
-  const canvasRef  = useRef(null)
-  const visibleRef = useRef(false)
+  const canvasRef    = useRef(null)
+  const visibleRef   = useRef(false)
+  const sectionRef   = useRef(null)   // 'architecture' | 'techstack' | null
+  const entryMsRef   = useRef(null)
+  const exitMsRef    = useRef(null)
 
-  /* Track architecture section visibility */
   useEffect(() => {
-    const el = document.getElementById('architecture')
-    if (!el) return
-    const obs = new IntersectionObserver(
-      ([e]) => { visibleRef.current = e.isIntersecting },
-      { threshold: 0.15 }
-    )
-    obs.observe(el)
-    return () => obs.disconnect()
+    let wasVisible = false
+    let lastSection = null
+    const check = () => {
+      const arch = document.getElementById('architecture')
+      const tech = document.getElementById('techstack')
+      const vh   = window.innerHeight
+
+      /* Pick the section with the largest visible area (not the first match).
+         Ensures clicking "Tech Stack" in the navbar swaps modes immediately,
+         even if architecture still has a few pixels showing at the very top. */
+      let current = null
+      let bestVisible = 0
+      for (const [id, el] of [['architecture', arch], ['techstack', tech]]) {
+        if (!el) continue
+        const { top, bottom } = el.getBoundingClientRect()
+        const visible = Math.max(0, Math.min(vh, bottom) - Math.max(0, top))
+        if (visible > bestVisible) {
+          bestVisible = visible
+          current     = id
+        }
+      }
+      const now = current !== null && bestVisible > vh * 0.25
+
+      if (now && !wasVisible) { entryMsRef.current = performance.now(); exitMsRef.current = null }
+      if (!now && wasVisible) { exitMsRef.current  = performance.now(); entryMsRef.current = null }
+      /* If switching between sections without leaving, just update the section ref */
+      if (now && wasVisible && current !== lastSection) {
+        /* smooth transition between sections without re-entry */
+      }
+      wasVisible = now
+      lastSection = current
+      sectionRef.current = current
+      visibleRef.current = now
+    }
+    check()
+    window.addEventListener('scroll', check, { passive: true })
+    return () => window.removeEventListener('scroll', check)
   }, [])
 
   useEffect(() => {
@@ -24,117 +55,227 @@ export default function RootCanvas() {
     Promise.all([
       import('three'),
       import('three/examples/jsm/loaders/GLTFLoader.js'),
-    ]).then(([THREE, { GLTFLoader }]) => {
+      import('three/examples/jsm/loaders/DRACOLoader.js'),
+    ]).then(([THREE, { GLTFLoader }, { DRACOLoader }]) => {
       if (cancelled) return
       const canvas = canvasRef.current
       if (!canvas) return
 
-      /* ── Renderer ──────────────────────────────────────────── */
-      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.2))
+      /* ── Renderer ─────────────────────────────────────────── */
+      const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false })
+      renderer.setPixelRatio(1)
       renderer.setClearColor(0x000000, 0)
-      renderer.toneMapping         = THREE.LinearToneMapping
-      renderer.toneMappingExposure = 1.6
-      renderer.shadowMap.enabled   = false
+      renderer.toneMapping         = THREE.ACESFilmicToneMapping
+      renderer.toneMappingExposure = 1.3
 
-      /* ── Camera ────────────────────────────────────────────── */
-      const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
-      camera.position.set(0, 0, 7)
+      /* ── Camera — wide, inside the roots ─────────────────── */
+      const camera = new THREE.PerspectiveCamera(78, window.innerWidth / window.innerHeight, 0.01, 60)
+      camera.position.set(0, 0, 2.2)
 
-      /* ── Scene ─────────────────────────────────────────────── */
+      /* ── Scene ────────────────────────────────────────────── */
       const scene = new THREE.Scene()
+      scene.add(new THREE.AmbientLight(0x010e06, 1.5))
 
-      const ambient = new THREE.AmbientLight(0x0a1a0e, 1.2)
-      scene.add(ambient)
-
-      const rimA = new THREE.PointLight(0x4ade80, 10, 22)
-      rimA.position.set(-3, 2, 5)
+      const rimA = new THREE.PointLight(0xaa7744, 3.5, 18)
+      rimA.position.set(-2, 0.5, 2)
       scene.add(rimA)
 
-      const rimB = new THREE.PointLight(0x22d3ee, 5, 18)
-      rimB.position.set(3, -1, 4)
+      const rimB = new THREE.PointLight(0x997755, 2.5, 16)
+      rimB.position.set(2, -0.5, 2)
       scene.add(rimB)
 
-      const top = new THREE.DirectionalLight(0xffffff, 0.9)
-      top.position.set(0, 6, 4)
-      scene.add(top)
+      /* Architecture: 2 calm pulses */
+      const archPulseDefs = [
+        { color: 0xaaddff, speed: 0.55, phase: 0.0  },
+        { color: 0xbbeeff, speed: 0.55, phase: Math.PI },
+      ]
+      const archPulses = archPulseDefs.map(({ color, speed, phase }) => {
+        const light = new THREE.PointLight(color, 0, 4)
+        scene.add(light)
+        return { light, speed, phase }
+      })
 
-      const under = new THREE.PointLight(0x14532d, 4, 12)
-      under.position.set(0, -4, 2)
-      scene.add(under)
+      /* Tech stack: 4 bioluminescent waves — slow, organic, travelling root veins */
+      const techPulseDefs = [
+        { color: 0x66ffaa, speed: 0.28, phase: 0.0,           radius: 3.5 },
+        { color: 0x44ddcc, speed: 0.22, phase: Math.PI * 0.5,  radius: 4.0 },
+        { color: 0x88ffcc, speed: 0.32, phase: Math.PI,        radius: 3.2 },
+        { color: 0x33eebb, speed: 0.18, phase: Math.PI * 1.5,  radius: 4.5 },
+      ]
+      const techPulses = techPulseDefs.map(({ color, speed, phase, radius }) => {
+        const light = new THREE.PointLight(color, 0, radius)
+        scene.add(light)
+        return { light, speed, phase, radius }
+      })
 
-      /* ── Resize ────────────────────────────────────────────── */
+      /* ── Resize ───────────────────────────────────────────── */
       const resize = () => {
-        const w = canvas.clientWidth
-        const h = canvas.clientHeight
-        if (!w || !h) return
-        renderer.setSize(w, h, false)
-        camera.aspect = w / h
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        camera.aspect = window.innerWidth / window.innerHeight
         camera.updateProjectionMatrix()
       }
       resize()
       window.addEventListener('resize', resize)
 
-      /* ── Load model ─────────────────────────────────────────── */
+      /* ── Load model ───────────────────────────────────────── */
       const group = new THREE.Group()
       scene.add(group)
       let modelReady = false
+      let baseScale  = 1
 
-      new GLTFLoader().load('/root/scene.gltf', (gltf) => {
-        if (cancelled) return
-        const model = gltf.scene
-        const box    = new THREE.Box3().setFromObject(model)
-        const size   = box.getSize(new THREE.Vector3())
-        const center = box.getCenter(new THREE.Vector3())
-        const scale  = 4.5 / Math.max(size.x, size.y, size.z)
+      const dracoLoader = new DRACOLoader()
+      dracoLoader.setDecoderPath('/draco/')
+      const gltfLoader = new GLTFLoader()
+      gltfLoader.setDRACOLoader(dracoLoader)
 
-        model.scale.setScalar(scale)
-        model.position.sub(center.multiplyScalar(scale))
+      gltfLoader.load(
+        '/root/scene.glb',
+        (gltf) => {
+          if (cancelled) return
+          const model = gltf.scene
+          const box    = new THREE.Box3().setFromObject(model)
+          const size   = box.getSize(new THREE.Vector3())
+          const center = box.getCenter(new THREE.Vector3())
+          const scale  = 8.0 / Math.max(size.x, size.y, size.z)
+          baseScale = scale
 
-        /* Re-colour: warm brown → dark green organic */
-        model.traverse((child) => {
-          if (!child.isMesh) return
-          child.material = child.material.clone()
-          child.material.color.setRGB(0.08, 0.38, 0.18)
-          child.material.roughness          = 0.72
-          child.material.metalness          = 0.05
-          child.material.emissive           = new THREE.Color(0x041a08)
-          child.material.emissiveIntensity  = 0.5
-        })
+          model.scale.setScalar(scale)
+          model.position.sub(center.multiplyScalar(scale))
 
-        group.add(model)
-        modelReady = true
-      })
+          const sharedMat = new THREE.MeshStandardMaterial({
+            color:             new THREE.Color(0.20, 0.13, 0.07),
+            roughness:         0.88,
+            metalness:         0.04,
+            emissive:          new THREE.Color(0x0a0400),
+            emissiveIntensity: 0.4,
+          })
+          model.traverse((child) => {
+            if (child.isMesh) child.material = sharedMat
+          })
 
-      /* ── Animate ───────────────────────────────────────────── */
+          group.add(model)
+          modelReady = true
+        },
+        undefined,
+        (err) => console.error('[RootCanvas] load error:', err)
+      )
+
+      /* ── Animate ──────────────────────────────────────────── */
       let raf
       let time   = 0
       let opLerp = 0
+      let scaleLerp = 1
+      let techMixLerp = 0   // 0 = arch, 1 = techstack
+      const smoothstep = (t) => t * t * (3 - 2 * t)
+
+      const ENTRY_DELAY    = 1.08
+      const ENTRY_FADE     = 0.9
+      const ENTRY_RISE     = 2.2
+      const ENTRY_Y_START  = -2.8
+      const EXIT_FADE      = 0.6
+      const EXIT_SINK      = 1.8
+      const EXIT_Y_END     = -2.8
 
       const animate = () => {
         raf = requestAnimationFrame(animate)
-        time += 0.008
 
-        /* Smooth fade in / out */
-        opLerp += ((visibleRef.current ? 1 : 0) - opLerp) * 0.04
-        canvas.style.opacity = opLerp
+        const nowMs   = performance.now()
+        const entryMs = entryMsRef.current
+        const exitMs  = exitMsRef.current
+        const section = sectionRef.current
 
-        if (modelReady) {
-          /* Slow Y orbit — "exploring roots" */
-          group.rotation.y += 0.003
-          /* Oscillating X tilt — reveals root layers */
-          group.rotation.x  = Math.sin(time * 0.28) * 0.12
-          /* Gentle float */
-          group.position.y  = Math.sin(time * 0.42) * 0.18
-          /* Pulse green rim */
-          rimA.intensity    = 10 + Math.sin(time * 0.55) * 3
-          rimB.intensity    =  5 + Math.sin(time * 0.38) * 1.5
+        let opTarget = 0
+        let yOffset  = ENTRY_Y_START
+
+        if (visibleRef.current && entryMs) {
+          const e = (nowMs - entryMs) / 1000
+          opTarget = e < ENTRY_DELAY ? 0 : Math.min(1, (e - ENTRY_DELAY) / ENTRY_FADE)
+          yOffset  = ENTRY_Y_START * (1 - smoothstep(Math.min(1, e / ENTRY_RISE)))
+
+        } else if (!visibleRef.current && exitMs) {
+          const e = (nowMs - exitMs) / 1000
+          opTarget = Math.max(0, 1 - smoothstep(Math.min(1, e / EXIT_FADE)))
+          yOffset  = EXIT_Y_END * smoothstep(Math.min(1, e / EXIT_SINK))
+          if (e > EXIT_SINK + 0.5) exitMsRef.current = null
         }
 
-        /* Slow camera drift for depth */
-        camera.position.x = Math.sin(time * 0.12) * 0.8
-        camera.position.y = Math.cos(time * 0.09) * 0.5
-        camera.lookAt(0, 0, 0)
+        opLerp += (opTarget - opLerp) * 0.055
+        canvas.style.opacity = opLerp
+
+        /* Tech section: scale up roots + transition lighting mode */
+        const techTarget = section === 'techstack' ? 1 : 0
+        techMixLerp += (techTarget - techMixLerp) * 0.04
+
+        const scaleTarget = section === 'techstack' ? 1.55 : 1
+        scaleLerp += (scaleTarget - scaleLerp) * 0.04
+
+        if (opLerp < 0.02 && opTarget === 0 && !exitMsRef.current) return
+
+        time += 0.006
+
+        if (modelReady) {
+          group.rotation.y += 0.0014 + techMixLerp * 0.0018
+          group.rotation.x  = Math.sin(time * 0.11) * 0.03
+          group.position.y  = yOffset + Math.sin(time * 0.18) * 0.07
+          group.scale.setScalar(baseScale * scaleLerp)
+
+          const lightScale = Math.min(1, opLerp * 1.5)
+
+          /* Architecture pulses — fade out as we enter techstack */
+          const archFactor = (1 - techMixLerp) * lightScale
+          archPulses.forEach(({ light, speed, phase }) => {
+            const t   = ((time * speed + phase) % (Math.PI * 2)) / (Math.PI * 2)
+            const y   = -2.5 + t * 5.0
+            const x   = Math.sin(time * 0.4 + phase) * 0.6
+            light.position.set(x, y, 1.2)
+            const edge = Math.min(t, 1 - t) * 4
+            light.intensity = Math.min(1, edge) * 4.5 * archFactor
+          })
+
+          /* Tech stack: bioluminescent waves travel slowly up root veins */
+          const techFactor = techMixLerp * lightScale
+          techPulses.forEach(({ light, speed, phase, radius }) => {
+            const t  = ((time * speed + phase) % (Math.PI * 2)) / (Math.PI * 2)
+            /* Smooth wave travelling bottom to top */
+            const y  = -2.8 + t * 5.6
+            /* Gentle wandering along root branches */
+            const x  = Math.sin(time * 0.18 + phase) * 0.9
+            const z  = 1.0 + Math.sin(time * 0.13 + phase * 0.7) * 0.5
+            light.position.set(x, y, z)
+            /* Soft bell-curve intensity — brightest mid-travel, fades at tips */
+            const bell = Math.sin(t * Math.PI)              // 0→1→0
+            /* Slow breath on top — no flicker */
+            const breath = 0.75 + Math.sin(time * 0.6 + phase) * 0.25
+            light.intensity = bell * 5.5 * breath * techFactor
+          })
+
+          /* Color shift: warm amber for architecture, cool teal for techstack */
+          const archR = 0xaa / 255, archG = 0x77 / 255, archB = 0x44 / 255
+          const techR = 0x33 / 255, techG = 0xcc / 255, techB = 0xaa / 255
+          const mix = techMixLerp
+          rimA.color.setRGB(
+            archR + (techR - archR) * mix,
+            archG + (techG - archG) * mix,
+            archB + (techB - archB) * mix,
+          )
+          rimB.color.setRGB(
+            archR + (techR - archR) * mix,
+            archG + (techG - archG) * mix,
+            archB + (techB - archB) * mix,
+          )
+          rimA.intensity = (3 + Math.sin(time * 0.5) * 1)   * lightScale
+          rimB.intensity = (2 + Math.sin(time * 0.4) * 0.8) * lightScale
+        }
+
+        /* No camera shake — smooth drift always */
+        camera.position.x = Math.sin(time * 0.065) * 0.8
+        camera.position.y = Math.cos(time * 0.05)  * 0.35
+        camera.position.z = 2.2 + Math.sin(time * 0.09) * 0.4
+        camera.lookAt(
+          Math.sin(time * 0.035) * 0.35,
+          Math.cos(time * 0.045) * 0.28,
+          0
+        )
 
         renderer.render(scene, camera)
       }
@@ -144,6 +285,7 @@ export default function RootCanvas() {
         cancelAnimationFrame(raf)
         window.removeEventListener('resize', resize)
         renderer.dispose()
+        dracoLoader.dispose()
       }
     })
 
@@ -157,11 +299,11 @@ export default function RootCanvas() {
       style={{
         position:      'fixed',
         top:           0,
-        left:          '52%',
-        width:         '48%',
-        height:        '100%',
+        left:          0,
+        width:         '100vw',
+        height:        '100vh',
         pointerEvents: 'none',
-        zIndex:        2,
+        zIndex:        0,
         opacity:       0,
       }}
     />

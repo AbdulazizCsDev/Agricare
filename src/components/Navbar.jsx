@@ -6,9 +6,10 @@ const NAV_ITEMS = [
   { id: 'solution',     label: 'Solution' },
   { id: 'timeline',     label: 'Timeline' },
   { id: 'architecture', label: 'Architecture' },
+  { id: 'techstack',    label: 'Tech Stack' },
 ]
 
-const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
+const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture', 'techstack']
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)

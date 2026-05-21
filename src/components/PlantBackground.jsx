@@ -12,7 +12,10 @@ const CAM_STATES = {
   solution:     { x: -0.5, y: 0.6,  z:  7.0, lx: -0.5, ly: 0.6,  lz: 0 },
   /* Full-plant view: plant center ≈ y -0.4, z=11 shows entire height slightly larger */
   timeline:     { x:  0.0, y: -0.4, z: 11.0, lx:  0.0, ly: -0.4, lz: 0 },
-  architecture: { x: -0.2, y: -1.6, z:  6.2, lx: -0.2, ly: -2.2, lz: 0 },
+  /* Slow close zoom on plant root area */
+  architecture: { x:  0.0, y: -1.85, z:  4.2, lx:  0.0, ly: -2.65, lz: 0 },
+  /* Tech stack: deeper, wider root view */
+  techstack:    { x:  0.0, y: -2.4, z:  4.2, lx:  0.0, ly: -3.2, lz: 0 },
 }
 
 /* Fixed Y-rotation target per section */
@@ -22,6 +25,7 @@ const PLANT_ROT_Y = {
   solution:     -0.14,
   timeline:      0.00,
   architecture: -0.08,
+  techstack:    -0.08,
 }
 
 const FX = {
@@ -30,16 +34,19 @@ const FX = {
   solution:     { sick: 0, scan: 1, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 3.5 },
   timeline:     { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
   architecture: { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
+  techstack:    { sick: 0, scan: 0, rimR: 0.29, rimG: 0.87, rimB: 0.5,  rimI: 2.5 },
 }
 
-const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture']
+const SECTIONS = ['hero', 'problem', 'solution', 'timeline', 'architecture', 'techstack']
 
 function lerp(a, b, t) { return a + (b - a) * t }
 function makeVal(v)     { return { v } }
 
 export default function PlantBackground() {
-  const canvasRef  = useRef(null)
-  const sectionRef = useRef('hero')
+  const canvasRef     = useRef(null)
+  const sectionRef    = useRef('hero')
+  const prevSecRef    = useRef('hero')
+  const archExitMsRef = useRef(null)   /* timestamp when we left architecture */
 
   useEffect(() => {
     const obs = []
@@ -154,7 +161,7 @@ export default function PlantBackground() {
 
       /* ── Model ────────────────────────────────────────────── */
       const draco = new DRACOLoader()
-      draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+      draco.setDecoderPath('/draco/')
       const loader = new GLTFLoader()
       loader.setDRACOLoader(draco)
 
@@ -180,11 +187,16 @@ export default function PlantBackground() {
           if (child.material) {
             child.material = child.material.clone()
             child.material.envMapIntensity = 1.0
+            const r = child.material.color.r
+            const g = child.material.color.g
+            /* Trunk/stem: warm brownish tone (r dominant over g) */
+            const isTrunk = r > g * 1.08
             meshData.push({
-              mesh:  child,
-              origR: child.material.color.r,
-              origG: child.material.color.g,
+              mesh: child,
+              origR: r,
+              origG: g,
               origB: child.material.color.b,
+              isTrunk,
             })
           }
         })
@@ -233,6 +245,8 @@ export default function PlantBackground() {
         rimR: makeVal(0.29), rimG: makeVal(0.87), rimB: makeVal(0.5),
         rimI: makeVal(3.0),
         rotY: makeVal(0),
+        canOp: makeVal(1),
+        pY:    makeVal(0),   /* plant vertical offset — rises off-screen for root view */
       }
 
       /* ── Animate ──────────────────────────────────────────── */
@@ -245,20 +259,45 @@ export default function PlantBackground() {
         raf = requestAnimationFrame(animate)
         time += 0.01
 
-        const sec    = sectionRef.current || 'hero'
-        const camTgt = CAM_STATES[sec]
-        const fxTgt  = FX[sec]
-
-        // For timeline: camera centers directly on plant
+        const sec        = sectionRef.current || 'hero'
+        const fxTgt      = FX[sec]
+        const isArch     = sec === 'architecture'
+        const isTech     = sec === 'techstack'
+        const isRootView = isArch || isTech
         const isTimeline = sec === 'timeline'
-        const cxTarget  = isTimeline ? plantX : camTgt.x
-        const lkxTarget = isTimeline ? plantX : camTgt.lx
-        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,  0.055)
-        const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,  0.055)
-        const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z,  0.055)
-        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget, 0.055)
-        const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly, 0.055)
-        const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz, 0.055)
+
+        /* Detect the exact moment we leave the root view (arch OR techstack) */
+        if (isRootView) {
+          archExitMsRef.current = null
+        } else if (
+          (prevSecRef.current === 'architecture' || prevSecRef.current === 'techstack')
+          && !archExitMsRef.current
+        ) {
+          archExitMsRef.current = performance.now()
+        }
+        prevSecRef.current = sec
+
+        const camTgt    = CAM_STATES[sec]
+        const cxTarget  = (isTimeline || isRootView) ? plantX : camTgt.x
+        const lkxTarget = (isTimeline || isRootView) ? plantX : camTgt.lx
+
+        /* Smoother entries: slower lerp into root view */
+        const lT  = isRootView ? 0.020 : 0.030
+
+        /* During the root-view rise, dolly extra-close toward the rising
+           trunk base (zoom-on-bottom) then settle back to the final cam target.
+           Boost peaks mid-transition (sin curve), 0 at start and end. */
+        const pYProgress  = isRootView ? Math.min(1, lv.pY.v / 8.5) : 0
+        const transitArc  = Math.sin(pYProgress * Math.PI)   // 0 → 1 → 0
+        const czBoost     = -transitArc * 1.1                // up to 1.1u closer
+        const lkyBoost    = -transitArc * 0.7                // look 0.7u lower
+
+        const cx  = lv.camX.v = lerp(lv.camX.v, cxTarget,            lT)
+        const cy  = lv.camY.v = lerp(lv.camY.v, camTgt.y,            lT)
+        const cz  = lv.camZ.v = lerp(lv.camZ.v, camTgt.z + czBoost,  lT)
+        const lkx = lv.lkX.v  = lerp(lv.lkX.v,  lkxTarget,           lT)
+        const lky = lv.lkY.v  = lerp(lv.lkY.v,  camTgt.ly + lkyBoost,lT)
+        const lkz = lv.lkZ.v  = lerp(lv.lkZ.v,  camTgt.lz,           lT)
 
         const sick = lv.sick.v = lerp(lv.sick.v, fxTgt.sick, 0.035)
         const scan = lv.scan.v = lerp(lv.scan.v, fxTgt.scan, 0.035)
@@ -275,6 +314,19 @@ export default function PlantBackground() {
         camera.position.set(cx + mx * 0.18, cy - my * 0.12, cz)
         camera.lookAt(lkx, lky, lkz)
 
+        /* Root-view exit:
+           - Plant rises off-screen upward (pY)
+           - Camera dollies closer toward the trunk base (camZoom)
+           - Canvas opacity fades smoothly so the lift dissolves into nothing */
+        const pYTarget = isRootView ? 8.5 : 0
+        const pYSpeed  = isRootView ? 0.020 : 0.024
+        const pY = lv.pY.v = lerp(lv.pY.v, pYTarget, pYSpeed)
+
+        const canOpTarget = isRootView ? 0 : 1
+        const canOpSpeed  = isRootView ? 0.016 : 0.018
+        const canOp = lv.canOp.v = lerp(lv.canOp.v, canOpTarget, canOpSpeed)
+        canvas.style.opacity = canOp
+
         rim.color.setRGB(rR, rG, rB)
         rim.intensity = rI + Math.sin(time * 0.55) * 0.6
         rim.position.x = (plantX - 3) + Math.sin(time * 0.42) * 0.6
@@ -289,15 +341,17 @@ export default function PlantBackground() {
           group.rotation.y = Math.sin(time * 0.28) * 0.012 + mx * 0.03 + rotY
           group.rotation.x = -my * 0.04 + Math.sin(time * 0.22) * 0.006
           group.rotation.z = wilt + Math.sin(time * 0.16) * (0.006 + sick * 0.014)
+          group.position.y = pY   /* lifts the tree up & out of frame for root view */
 
           const breathe = 1 + Math.sin(time * 0.72) * (0.006 + scan * 0.004)
           group.scale.setScalar(breathe)
 
-          meshData.forEach(({ mesh, origR, origG, origB }) => {
-            const m = mesh.material
-            m.color.r = origR + (origR * 0.1) * sick
-            m.color.g = origG * (1 - sick * 0.45)
-            m.color.b = origB * (1 - sick * 0.85)
+          meshData.forEach(({ mesh, origR, origG, origB, isTrunk }) => {
+            const m   = mesh.material
+            const d   = isTrunk ? 0.45 : 1.0   /* darken trunk/stem */
+            m.color.r = origR * d + (origR * 0.1) * sick
+            m.color.g = origG * d * (1 - sick * 0.45)
+            m.color.b = origB * d * (1 - sick * 0.85)
           })
         }
 
@@ -347,12 +401,14 @@ export default function PlantBackground() {
       ref={canvasRef}
       aria-hidden="true"
       style={{
-        position: 'fixed',
+        position:   'fixed',
         top: 0, left: 0,
-        width: '100%',
-        height: '100%',
+        width:      '100%',
+        height:     '100%',
         pointerEvents: 'none',
-        zIndex: 0,
+        zIndex:     0,
+        willChange: 'opacity',
+        transform:  'translateZ(0)',
       }}
     />
   )
